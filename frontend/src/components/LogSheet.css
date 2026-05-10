@@ -1,0 +1,17 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   LogSheet Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.log-sheet {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  overflow-x: auto;
+}
+
+.log-sheet__canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}

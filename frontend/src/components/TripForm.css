@@ -1,0 +1,92 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   TripForm Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.trip-form {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-default);
+}
+
+.trip-form__header {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.trip-form__header h3 {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.trip-form__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+}
+
+.trip-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+@media (max-width: 640px) {
+  .trip-form__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.trip-form__actions {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Optional tag */
+.input-optional {
+  font-weight: var(--weight-regular);
+  text-transform: none;
+  letter-spacing: var(--tracking-normal);
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* Date input dark-mode fix */
+.trip-form input[type="date"] {
+  color-scheme: dark;
+}
+
+/* Number input spinner removal */
+.trip-form input[type="number"]::-webkit-outer-spin-button,
+.trip-form input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.trip-form input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Button inline spinner */
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--text-inverse);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Disabled input styling */
+.trip-form input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

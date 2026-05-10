@@ -1,0 +1,50 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   TripSummary Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.trip-summary__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+}
+
+.trip-summary__header h2 {
+  font-size: var(--text-2xl);
+}
+
+.stat-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+@media (max-width: 768px) {
+  .stat-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat-card__detail {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.stat-card__tag {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  padding: 1px var(--space-2);
+  border: 1px solid;
+}
+
+.stat-card__tag--fuel {
+  color: var(--status-warning);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.stat-card__tag--rest {
+  color: var(--status-sleeper);
+  border-color: rgba(139, 92, 246, 0.3);
+}
