@@ -5,6 +5,8 @@ Pipeline:  Request → Validate → Geocode → Route → HOS Calculate → Resp
 """
 
 import logging
+import threading
+import time
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -15,6 +17,21 @@ from .hos_calculator import calculate_trip
 from .serializers import TripPlanSerializer
 
 logger = logging.getLogger(__name__)
+
+# ─── Application-level metrics ───────────────────────────────────────────────
+_APP_START_TIME = time.time()
+_metrics_lock = threading.Lock()
+_metrics = {
+    "requests_total": 0,
+    "trips_planned": 0,
+    "trips_failed": 0,
+}
+
+
+def _increment(key: str) -> None:
+    """Thread-safe counter increment."""
+    with _metrics_lock:
+        _metrics[key] += 1
 
 
 class HealthView(APIView):
@@ -31,6 +48,38 @@ class HealthView(APIView):
                 "status": "ok",
                 "service": "eld-trip-planner",
                 "version": "1.0.0",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class MetricsView(APIView):
+    """
+    GET /api/metrics/
+
+    Returns application-level counters and runtime statistics for monitoring
+    dashboards and alerting systems.
+
+    Response:
+        {
+            "status": "ok",
+            "version": "1.0.0",
+            "uptime_seconds": 3600.5,
+            "requests_total": 42,
+            "trips_planned": 38,
+            "trips_failed": 4
+        }
+    """
+
+    def get(self, request):
+        with _metrics_lock:
+            snapshot = dict(_metrics)
+        return Response(
+            {
+                "status": "ok",
+                "version": "1.0.0",
+                "uptime_seconds": round(time.time() - _APP_START_TIME, 2),
+                **snapshot,
             },
             status=status.HTTP_200_OK,
         )
@@ -65,6 +114,7 @@ class TripPlanView(APIView):
     """
 
     def post(self, request):
+        _increment('requests_total')
         # ── Step 1: Validate input ──
         serializer = TripPlanSerializer(data=request.data)
         if not serializer.is_valid():
@@ -150,17 +200,18 @@ class TripPlanView(APIView):
                 'stop_events': hos_result['stop_events'],
             }
 
+            _increment('trips_planned')
             return Response(response_data, status=status.HTTP_200_OK)
 
         except ValueError as e:
-            # Geocoding or routing errors
+            _increment('trips_failed')
             logger.warning(f"Trip planning failed (ValueError): {e}")
             return Response(
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            # Unexpected errors
+            _increment('trips_failed')
             logger.error(f"Trip planning failed (unexpected): {e}", exc_info=True)
             return Response(
                 {'error': 'An unexpected error occurred. Please try again.'},
