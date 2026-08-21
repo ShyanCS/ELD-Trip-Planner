@@ -32,7 +32,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -178,4 +178,4 @@ jobs:
         run: pip install pip-audit
 
       - name: Audit backend dependencies for known vulnerabilities
-        run: pip-audit -r requirements.txt --progress-spinner off
+        run: pip-audit -r requirements.lock --progress-spinner off

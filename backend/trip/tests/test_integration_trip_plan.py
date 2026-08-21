@@ -7,12 +7,11 @@ Asserts FMCSA-compliant totals and response structure.
 """
 
 import re
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import responses as responses_lib
 from django.test import TestCase
 from rest_framework.test import APIClient
-
 
 # ─── Mock helpers (same ORS stubs as test_views.py) ──────────────────────────
 
