@@ -286,6 +286,30 @@ class TestTripPlanViewSuccess(TestCase):
 
     @patch('trip.geocoder.requests.post')
     @patch('trip.geocoder.requests.get')
+    def test_response_has_trip_summary(self, mock_get, mock_post, mock_settings):
+        """Response contains trip_summary with trip_days and total_driving_hours."""
+        mock_settings.ORS_API_KEY = 'test-key'
+        mock_get.side_effect = _mock_geocode_responses()
+        mock_post.side_effect = _mock_route_side_effect()
+
+        response = self.client.post(self.url, {
+            'current_location': 'Chicago, IL',
+            'pickup_location': 'Kansas City, MO',
+            'dropoff_location': 'Los Angeles, CA',
+            'current_cycle_used': 20,
+        }, format='json')
+
+        self.assertEqual(response.status_code, 200)
+        summary = response.data.get('trip_summary')
+        self.assertIsNotNone(summary, "Response must include trip_summary")
+        self.assertIn('trip_days', summary)
+        self.assertIn('total_driving_hours', summary)
+        self.assertIn('total_distance_miles', summary)
+        self.assertGreater(summary['trip_days'], 0)
+        self.assertGreater(summary['total_driving_hours'], 0)
+
+    @patch('trip.geocoder.requests.post')
+    @patch('trip.geocoder.requests.get')
     def test_response_has_daily_logs(self, mock_get, mock_post, mock_settings):
         """Response contains daily_logs array with correct structure."""
         mock_settings.ORS_API_KEY = 'test-key'

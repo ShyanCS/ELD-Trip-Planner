@@ -220,12 +220,25 @@ class TripPlanView(APIView):
             )
 
             # ── Step 6: Build response ──
+            trip_days = len(hos_result['daily_logs'])
+            total_driving_hours = round(
+                sum(
+                    day.get('totals', {}).get('driving', 0)
+                    for day in hos_result['daily_logs']
+                ),
+                2,
+            )
             response_data = {
                 'route': {
                     'total_distance_miles': round(total_distance, 1),
                     'total_duration_hours': round(total_duration, 2),
                     'geometry': full_geometry,
                     'waypoints': waypoints,
+                },
+                'trip_summary': {
+                    'trip_days': trip_days,
+                    'total_driving_hours': total_driving_hours,
+                    'total_distance_miles': round(total_distance, 1),
                 },
                 'daily_logs': hos_result['daily_logs'],
                 'stop_events': hos_result['stop_events'],
