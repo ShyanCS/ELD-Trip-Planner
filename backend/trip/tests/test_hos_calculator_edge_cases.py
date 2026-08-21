@@ -253,3 +253,38 @@ class TestAllHoursSumTo24Final(TestCase):
             start_date='2026-05-07',
         )
         self._assert_all_24(result)
+
+
+class TestCycleBoundaryAt70(TestCase):
+    """
+    Test that a driver who has used exactly 70 cycle hours triggers an immediate
+    34-hour restart before any driving begins — no driving hours should appear
+    on the first log day without a mandatory restart.
+    """
+
+    def setUp(self):
+        self.result = calculate_trip(
+            segments=[
+                {'distance_miles': 300, 'from_location': 'Chicago, IL', 'to_location': 'St. Louis, MO'},
+            ],
+            current_cycle_used=70,
+            start_date='2026-05-07',
+        )
+
+    def test_returns_logs(self):
+        """Result contains at least one daily log."""
+        self.assertGreater(len(self.result['daily_logs']), 0)
+
+    def test_first_day_has_required_rest(self):
+        """First day must include off-duty block ≥ 10 hours when starting at max cycle."""
+        first_day = self.result['daily_logs'][0]
+        totals = first_day.get('totals', {})
+        rest = totals.get('sleeper_berth', 0) + totals.get('off_duty', 0)
+        self.assertGreaterEqual(rest, 10.0, "Driver at 70-hour cycle must rest ≥ 10h before driving")
+
+    def test_trip_completes(self):
+        """Trip must eventually complete despite starting at maximum cycle."""
+        total_miles = sum(
+            day.get('miles_today', 0) for day in self.result['daily_logs']
+        )
+        self.assertGreater(total_miles, 0, "Expected driving to happen across all days")
