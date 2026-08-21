@@ -24,9 +24,11 @@ Assumptions (fixed):
     - Pre/post trip inspection: 30 minutes OND
 """
 
-from dataclasses import dataclass, field
+from dataclasses import field  # noqa: F401 — re-exported for backward compat
 from datetime import datetime, timedelta
 from typing import Optional
+
+from .models_dataclasses import DutyEvent, DailyLog, StopEvent  # noqa: F401
 
 
 # ─── Constants ───────────────────────────────────────────────────────────────
@@ -46,36 +48,6 @@ MAX_CYCLE_HOURS = 70.0
 RESTART_HOURS = 34.0
 DEFAULT_START_HOUR = 8.0        # 08:00
 
-
-# ─── Data Classes ────────────────────────────────────────────────────────────
-
-@dataclass
-class DutyEvent:
-    """A single duty status change event in a driver's day."""
-    time: str               # "HH:MM" format
-    status: str             # "off_duty" | "sleeper_berth" | "driving" | "on_duty_not_driving"
-    location: str           # City, State
-    hours: float            # Duration of this event in hours
-    miles: float = 0.0      # Miles driven during this event (0 for non-driving)
-
-
-@dataclass
-class DailyLog:
-    """A complete daily log for one day."""
-    day: int                                # Day number (1-indexed)
-    date: str                               # "YYYY-MM-DD" format
-    events: list = field(default_factory=list)   # List of DutyEvent dicts
-    totals: dict = field(default_factory=dict)   # {off_duty, sleeper_berth, driving, on_duty_not_driving}
-    miles_today: float = 0.0                # Miles driven THIS day only
-    remarks: list = field(default_factory=list)   # ["HH:MM Location - Activity"]
-
-
-@dataclass
-class StopEvent:
-    """A stop that needs a map waypoint (fuel stop or rest stop)."""
-    type: str               # "fuel" | "rest"
-    location_name: str      # Best-effort name
-    total_miles_at_stop: float  # Miles from trip start — used by views.py for geo-placement
 
 
 # ─── Helper Functions ────────────────────────────────────────────────────────
