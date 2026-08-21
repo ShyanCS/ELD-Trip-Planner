@@ -1,0 +1,17 @@
+# Primary direct dependencies (unpinned).
+# This file is the human-edited source of truth.
+#
+# To regenerate the compiled lockfile (requirements.txt), run:
+#   pip install pip-tools
+#   pip-compile requirements.in --output-file requirements.txt
+#
+# To upgrade all packages to latest compatible versions:
+#   pip-compile --upgrade requirements.in --output-file requirements.txt
+
+Django>=4.2,<5.0
+djangorestframework>=3.15,<4.0
+django-cors-headers>=4.3,<5.0
+requests>=2.32,<3.0
+python-decouple>=3.8,<4.0
+gunicorn>=21.0,<22.0
+whitenoise>=6.7,<7.0
