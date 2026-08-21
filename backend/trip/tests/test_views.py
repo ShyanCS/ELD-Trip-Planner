@@ -167,6 +167,26 @@ class TestTripPlanViewValidation(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, 400)
 
+    def test_invalid_location_chars_returns_400(self, mock_settings):
+        """Location with script injection characters is rejected by RegexValidator."""
+        response = self.client.post(self.url, {
+            'current_location': '<script>alert(1)</script>',
+            'pickup_location': 'Kansas City, MO',
+            'dropoff_location': 'Los Angeles, CA',
+            'current_cycle_used': 10,
+        }, format='json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_same_pickup_and_dropoff_returns_400(self, mock_settings):
+        """Pickup and dropoff at the same location is rejected by cross-field validate()."""
+        response = self.client.post(self.url, {
+            'current_location': 'Chicago, IL',
+            'pickup_location': 'Kansas City, MO',
+            'dropoff_location': 'Kansas City, MO',
+            'current_cycle_used': 10,
+        }, format='json')
+        self.assertEqual(response.status_code, 400)
+
 
 @patch('trip.geocoder.settings')
 class TestTripPlanViewSuccess(TestCase):
