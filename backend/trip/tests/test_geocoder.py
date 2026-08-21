@@ -5,6 +5,7 @@ All ORS API calls are mocked using the responses library — no real API key nee
 """
 
 from unittest.mock import patch
+
 import responses
 from django.test import TestCase
 
@@ -182,7 +183,7 @@ class TestGetIntermediatePoint(TestCase):
     def test_intermediate_point_at_known_distance(self, mock_settings):
         """Finding a point partway along a route returns valid coordinates."""
         mock_settings.ORS_API_KEY = 'test-key'
-        
+
         responses.add(
             responses.GET,
             'https://api.openrouteservice.org/geocode/reverse',
@@ -214,7 +215,7 @@ class TestGetIntermediatePoint(TestCase):
     def test_intermediate_point_beyond_route(self, mock_settings):
         """If target distance exceeds route, returns the last point."""
         mock_settings.ORS_API_KEY = 'test-key'
-        
+
         responses.add(
             responses.GET,
             'https://api.openrouteservice.org/geocode/reverse',

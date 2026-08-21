@@ -3,7 +3,6 @@ annotated-doc==0.0.5
 annotated-types==0.8.0
 anyio==4.14.2
 # Editable Git install with no remote (arksim==0.1.dev163+g6d4d21b73.d20260805)
--e c:\users\shyan\desktop\sentinal ultra\sentinal inprogress\42843c05-4d95-4eb7-a5fa-cb2dab4ded07_submission\environment\repo
 attrs==26.1.0
 certifi==2026.6.17
 cffi==2.1.1

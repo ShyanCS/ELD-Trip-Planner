@@ -4,6 +4,7 @@ Django settings for ELD Trip Planner project.
 
 from pathlib import Path
 
+import sentry_sdk
 from decouple import Csv, config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -114,8 +115,7 @@ else:
 # OpenRouteService API Key
 ORS_API_KEY = config('ORS_API_KEY', default='')
 
-import sentry_sdk
-from .logging import LOGGING
+from .logging import LOGGING  # noqa: F401, E402
 
 SENTRY_DSN = config('SENTRY_DSN', default='')
 if SENTRY_DSN:
