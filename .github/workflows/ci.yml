@@ -136,3 +136,27 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
+
+  # ─── Security: Dependency Audit ──────────────────────────────────────────────
+  security-audit:
+    name: Security Audit (pip-audit)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit backend dependencies for known vulnerabilities
+        run: pip-audit -r requirements.txt --progress-spinner off
