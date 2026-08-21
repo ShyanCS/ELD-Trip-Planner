@@ -37,14 +37,27 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install backend dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.lock
 
-      - name: Run Django test suite
+      - name: Install coverage
+        run: pip install coverage
+
+      - name: Run Django test suite with coverage
         env:
           SECRET_KEY: ci-test-secret-key-not-for-production
           DEBUG: "True"
           ORS_API_KEY: ""
-        run: python manage.py test --verbosity=2
+        run: |
+          coverage run --source=trip manage.py test --verbosity=2
+          coverage report --fail-under=70
+          coverage xml -o coverage.xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage.xml
+          if-no-files-found: ignore
 
   # ─── Backend: Lint ───────────────────────────────────────────────────────────
   backend-lint:
