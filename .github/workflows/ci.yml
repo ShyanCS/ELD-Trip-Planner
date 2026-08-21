@@ -43,7 +43,7 @@ jobs:
         run: |
           pip install pip-tools
           pip-compile requirements.in --output-file requirements.lock.new --no-header
-          cmp requirements.lock requirements.lock.new || (echo "requirements.lock is stale! Run 'pip-compile requirements.in --output-file requirements.lock --no-header'" && exit 1)
+          diff -u --strip-trailing-cr requirements.lock requirements.lock.new || (echo "requirements.lock is stale! Run 'pip-compile requirements.in --output-file requirements.lock --no-header'" && exit 1)
 
       - name: Install coverage
         run: pip install coverage
