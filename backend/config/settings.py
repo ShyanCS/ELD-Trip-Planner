@@ -113,3 +113,45 @@ else:
 
 # OpenRouteService API Key
 ORS_API_KEY = config('ORS_API_KEY', default='')
+
+# ─── Structured Logging ───────────────────────────────────────────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'structured': {
+            # JSON-style key=value pairs for log aggregators (Datadog, CloudWatch, etc.)
+            'format': (
+                '%(asctime)s level=%(levelname)s logger=%(name)s '
+                'module=%(module)s line=%(lineno)d message=%(message)s'
+            ),
+            'datefmt': '%Y-%m-%dT%H:%M:%S%z',
+        },
+        'simple': {
+            'format': '%(levelname)s %(name)s %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'structured',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+    'loggers': {
+        'trip': {
+            'handlers': ['console'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
