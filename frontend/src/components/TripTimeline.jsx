@@ -37,11 +37,11 @@ export default function TripTimeline({ dailyLogs }) {
 
               // Determine event type for styling
               const isRest = description.toLowerCase().includes('break');
-              const isPreTrip = description.toLowerCase().includes('pre-trip');
-              const isPostTrip = description.toLowerCase().includes('post-trip');
+              const _isPreTrip = description.toLowerCase().includes('pre-trip');
+              const _isPostTrip = description.toLowerCase().includes('post-trip');
               const isPickup = description.toLowerCase().includes('pickup');
               const isDropoff = description.toLowerCase().includes('dropoff');
-              const isDriving = description.toLowerCase().includes('driving');
+              const _isDriving = description.toLowerCase().includes('driving');
               
               let eventClass = 'timeline-event__dot--default';
               if (isRest) eventClass = 'timeline-event__dot--rest';
