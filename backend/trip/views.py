@@ -85,6 +85,37 @@ class MetricsView(APIView):
         )
 
 
+class VersionView(APIView):
+    """
+    GET /api/version/
+
+    Returns the application version and runtime info.
+    Useful for deployment validation and client-side feature gating.
+
+    Response:
+        {
+            "app": "eld-trip-planner",
+            "version": "1.0.0",
+            "django_version": "5.2.17",
+            "python_version": "3.11.x"
+        }
+    """
+
+    def get(self, request):
+        import django
+        import sys
+
+        return Response(
+            {
+                "app": "eld-trip-planner",
+                "version": "1.0.0",
+                "django_version": django.get_version(),
+                "python_version": sys.version.split()[0],
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class TripPlanView(APIView):
     """
     POST /api/trip/plan/

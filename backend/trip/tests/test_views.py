@@ -124,6 +124,55 @@ def _mock_route_side_effect():
 
 # ─── Test Cases ──────────────────────────────────────────────────────────────
 
+class TestVersionView(TestCase):
+    """Tests for GET /api/version/."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.url = '/api/trip/version/'
+
+    def test_returns_200(self):
+        """Version endpoint returns HTTP 200."""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_response_has_required_keys(self):
+        """Response includes app, version, django_version, python_version."""
+        response = self.client.get(self.url)
+        data = response.data
+        for key in ('app', 'version', 'django_version', 'python_version'):
+            self.assertIn(key, data)
+
+    def test_app_name(self):
+        """App name is eld-trip-planner."""
+        response = self.client.get(self.url)
+        self.assertEqual(response.data['app'], 'eld-trip-planner')
+
+
+class TestMetricsView(TestCase):
+    """Tests for GET /api/metrics/."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.url = '/api/trip/metrics/'
+
+    def test_returns_200(self):
+        """Metrics endpoint returns HTTP 200."""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_response_has_required_keys(self):
+        """Response includes status, version, uptime_seconds, requests_total."""
+        response = self.client.get(self.url)
+        for key in ('status', 'version', 'uptime_seconds', 'requests_total'):
+            self.assertIn(key, response.data)
+
+    def test_uptime_is_positive(self):
+        """Uptime must be a non-negative number."""
+        response = self.client.get(self.url)
+        self.assertGreaterEqual(response.data['uptime_seconds'], 0)
+
+
 @patch('trip.geocoder.settings')
 class TestTripPlanViewValidation(TestCase):
     """Tests for input validation in the API endpoint."""
