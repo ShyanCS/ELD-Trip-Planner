@@ -7,10 +7,13 @@ Functions:
     get_intermediate_point(geometry, target_distance_miles) -> (lat, lon, nearest_city)
 """
 
+import logging
 import math
 
 import requests
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 # ORS API base URLs
 ORS_BASE_URL = 'https://api.openrouteservice.org'
@@ -54,44 +57,45 @@ def geocode(place_name):
 
     api_key = _get_api_key()
 
-    response = requests.get(
-        GEOCODE_URL,
-        params={
-            'api_key': api_key,
-            'text': place_name,
-            'size': 1,
-            'boundary.country': 'US',
-        },
-        timeout=10,
-    )
     try:
+        response = requests.get(
+            GEOCODE_URL,
+            params={
+                'api_key': api_key,
+                'text': place_name,
+                'size': 1,
+                'layers': 'locality,address,venue',
+                'boundary.country': 'US',
+            },
+            timeout=10,
+        )
         response.raise_for_status()
-    except requests.exceptions.HTTPError:
-        if response.status_code == 403:
-            raise ValueError(
-                "ORS API key is invalid or expired. "
-                "Get a free key at https://openrouteservice.org and update your .env file."
-            )
-        # Fallback to returning the raw text if parsing fails
-        raise ValueError(f"Geocoding failed (HTTP {response.status_code}): {response.text}")
+    except requests.RequestException as exc:
+        logger.error(
+            'ORS geocode request failed',
+            extra={'place_name': place_name, 'error': str(exc)},
+        )
+        raise
 
     data = response.json()
     features = data.get('features', [])
 
     if not features:
-        raise ValueError(f"Could not find location: '{place_name}'. Please check the spelling and try again.")
+        logger.warning(
+            'Geocode returned no results',
+            extra={'place_name': place_name},
+        )
+        raise ValueError(
+            f"Could not find location: {place_name!r}. Please check the spelling and try again."
+        )
 
-    feature = features[0]
-    coords = feature['geometry']['coordinates']  # [lon, lat] in GeoJSON
-    name = feature['properties'].get('label', place_name)
-
-    result = {
-        'lat': coords[1],
-        'lon': coords[0],
-        'name': name,
-    }
-
-    # Cache the result
+    coords = features[0]['geometry']['coordinates']  # [lon, lat]
+    label = features[0]['properties'].get('label', place_name)
+    result = {'lat': coords[1], 'lon': coords[0], 'name': label}
+    logger.debug(
+        'Geocoded location',
+        extra={'place_name': place_name, 'resolved': label, 'lat': coords[1], 'lon': coords[0]},
+    )
     _geocode_cache[cache_key] = result
     return result
 

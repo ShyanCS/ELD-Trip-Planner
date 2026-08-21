@@ -24,10 +24,13 @@ Assumptions (fixed):
     - Pre/post trip inspection: 30 minutes OND
 """
 
+import logging
 from dataclasses import field  # noqa: F401 — re-exported for backward compat
 from datetime import datetime, timedelta
 
 from .models_dataclasses import DailyLog, DutyEvent, StopEvent  # noqa: F401
+
+logger = logging.getLogger(__name__)
 
 # ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -220,6 +223,15 @@ def calculate_trip(segments, current_cycle_used=0.0, start_date=None):
         """
         nonlocal day_number, current_time, day_events, day_remarks, miles_today
         nonlocal driving_hours_today, window_start, hours_since_last_break, cycle_hours_used
+
+        logger.info(
+            '34-hour restart triggered',
+            extra={
+                'location': location,
+                'day_number': day_number,
+                'cycle_hours_used': round(cycle_hours_used, 2),
+            },
+        )
 
         # Step 1: Finalize current day — the off-duty padding counts toward restart
         time_used_today = sum(e['hours'] for e in day_events)
