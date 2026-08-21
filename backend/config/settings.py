@@ -114,17 +114,14 @@ else:
 # OpenRouteService API Key
 ORS_API_KEY = config('ORS_API_KEY', default='')
 
-# ─── Structured Logging ───────────────────────────────────────────────────────
+# ─── Structured JSON Logging (python-json-logger) ────────────────────────────
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'structured': {
-            # JSON-style key=value pairs for log aggregators (Datadog, CloudWatch, etc.)
-            'format': (
-                '%(asctime)s level=%(levelname)s logger=%(name)s '
-                'module=%(module)s line=%(lineno)d message=%(message)s'
-            ),
+        'json': {
+            '()': 'pythonjsonlogger.jsonlogger.JsonFormatter',
+            'format': '%(asctime)s %(levelname)s %(name)s %(module)s %(lineno)d %(message)s',
             'datefmt': '%Y-%m-%dT%H:%M:%S%z',
         },
         'simple': {
@@ -134,7 +131,7 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'structured',
+            'formatter': 'json',
         },
     },
     'root': {
