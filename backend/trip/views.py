@@ -102,8 +102,9 @@ class VersionView(APIView):
     """
 
     def get(self, request):
-        import django
         import sys
+
+        import django
 
         return Response(
             {

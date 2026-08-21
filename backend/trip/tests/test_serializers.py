@@ -9,10 +9,8 @@ Covers:
 """
 
 from django.test import TestCase
-from rest_framework.exceptions import ValidationError
 
 from trip.serializers import TripPlanSerializer
-
 
 VALID_BASE = {
     'current_location': 'Chicago, IL',

@@ -408,35 +408,38 @@ This engine implements the **FMCSA Hours of Service regulations for property-car
 
 ## 🧪 Testing
 
-The project includes a comprehensive test suite of **70 tests** covering the HOS engine, API validation, and end-to-end behavior.
+The project includes a comprehensive test suite covering the HOS engine, API validation, serializer rules, and end-to-end behavior.
 
-### Run All Tests
+### Run All Backend Tests (with coverage)
 
 ```bash
 cd backend
-python manage.py test trip.tests -v 2
+# Install deps from lockfile
+pip install -r requirements.lock
+
+# Run tests with coverage (mirrors CI exactly)
+coverage run --source=trip manage.py test
+coverage report --fail-under=70
+```
+
+### Run Frontend Tests (with coverage)
+
+```bash
+cd frontend
+npm ci
+npm run test:coverage   # enforces 70% line / 60% branch thresholds
 ```
 
 ### Test Categories
 
-| Category | Count | What's Tested |
-|----------|-------|---------------|
-| **Helper Functions** | 1 | `_hours_to_time_str` decimal → HH:MM conversion |
-| **Short Trip (200mi)** | 10 | Single-day trip, no breaks, inspections, pickup/dropoff |
-| **Medium Trip (600mi)** | 3 | 30-min break trigger at 8 hours |
-| **Long Trip (2,110mi)** | 5 | Multi-day, fuel stops, rest stops, consecutive dates |
-| **Driving Limits** | 3 | 11-hour cap, 14-hour window, rest stop generation |
-| **Break Trigger** | 1 | 8-hour cumulative driving threshold |
-| **Fuel Stop Reset** | 2 | 1-hour fuel stop resets 30-min break counter |
-| **High Cycle (60hrs)** | 3 | Day-1 driving capped by remaining cycle hours |
-| **Max Cycle + 34hr Restart** | 4 | 65-hour cycle triggers full 34-hour restart |
-| **Hours Sum to 24** | 12 | Every daily log totals sum to exactly 24.0 |
-| **Zero-Distance Segment** | 2 | Edge case: same-city pickup |
-| **API Validation** | 4 | Empty body, missing fields, cycle bounds |
-| **API Success** | 6 | Route, daily_logs, waypoints, geometry structure |
-| **API Errors** | 2 | Unknown location, missing API key |
-| **Comprehensive 24hr** | 3 | High cycle, max restart, zero-distance all sum to 24 |
-| **Iteration Edge Cases** | 9 | Break reset, post-trip timing, etc. |
+| Category | File | What's Tested |
+|----------|------|---------------|
+| **HOS Short Trip** | `test_hos_calculator_single_day.py` | 200mi single-day, inspections, pickup/dropoff |
+| **HOS Multi-day** | `test_hos_calculator_multiday.py` | 600–2110mi, breaks, fuel stops, rest stops |
+| **HOS Edge Cases** | `test_hos_calculator_edge_cases.py` | Cycle limits, 34hr restart, zero-distance, 70h boundary |
+| **Serializer** | `test_serializers.py` | RegexValidator, cycle bounds, cross-field pickup≠dropoff |
+| **API Views** | `test_views.py` | Validation, success flow, error handling, health/metrics/version |
+| **Frontend** | `src/components/__tests__/` | LogSheet, TripForm, TripSummary component tests |
 
 ### Key Invariant
 
