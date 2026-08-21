@@ -427,7 +427,7 @@ coverage report --fail-under=70
 ```bash
 cd frontend
 npm ci
-npm run test:coverage   # enforces 70% line / 60% branch thresholds
+npm run test:coverage   # enforces 80% statements/lines, 65% branches, 75% functions
 ```
 
 ### Test Categories
@@ -439,7 +439,7 @@ npm run test:coverage   # enforces 70% line / 60% branch thresholds
 | **HOS Edge Cases** | `test_hos_calculator_edge_cases.py` | Cycle limits, 34hr restart, zero-distance, 70h boundary |
 | **Serializer** | `test_serializers.py` | RegexValidator, cycle bounds, cross-field pickup≠dropoff |
 | **API Views** | `test_views.py` | Validation, success flow, error handling, health/metrics/version |
-| **Frontend** | `src/components/__tests__/` | LogSheet, TripForm, TripSummary component tests |
+| **Frontend** | `src/components/__tests__/` | ErrorBanner, LoadingSpinner, LogSheet, MapView, TripForm, TripSummary, TripTimeline (7 files, 55 tests) |
 
 ### Key Invariant
 
