@@ -26,10 +26,8 @@ Assumptions (fixed):
 
 from dataclasses import field  # noqa: F401 — re-exported for backward compat
 from datetime import datetime, timedelta
-from typing import Optional
 
-from .models_dataclasses import DutyEvent, DailyLog, StopEvent  # noqa: F401
-
+from .models_dataclasses import DailyLog, DutyEvent, StopEvent  # noqa: F401
 
 # ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -278,7 +276,7 @@ def calculate_trip(segments, current_cycle_used=0.0, start_date=None):
         seg_from = segment['from_location']
         seg_to = segment['to_location']
         is_pickup = (seg_idx == 0)  # First segment ends at pickup
-        is_last = (seg_idx == len(segments) - 1)  # Last segment ends at dropoff
+        # is_last = (seg_idx == len(segments) - 1)  # Last segment ends at dropoff
 
         # ── Zero-distance guard ──
         if seg_distance < 1:

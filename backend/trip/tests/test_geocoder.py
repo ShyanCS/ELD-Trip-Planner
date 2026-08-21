@@ -4,11 +4,11 @@ Tests for the geocoder module.
 All ORS API calls are mocked — no real API key needed for testing.
 """
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from django.test import TestCase
 
-from trip.geocoder import geocode, get_route, get_intermediate_point, clear_cache, _haversine_meters
-
+from trip.geocoder import _haversine_meters, clear_cache, geocode, get_intermediate_point, get_route
 
 # ─── Mock Response Factories ────────────────────────────────────────────────
 

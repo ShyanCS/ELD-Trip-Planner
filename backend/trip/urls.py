@@ -3,7 +3,8 @@ Trip URL routing.
 """
 
 from django.urls import path
-from .views import TripPlanView, HealthView
+
+from .views import HealthView, TripPlanView
 
 urlpatterns = [
     path('plan/', TripPlanView.as_view(), name='trip-plan'),

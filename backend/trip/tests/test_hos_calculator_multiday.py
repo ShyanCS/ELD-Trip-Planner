@@ -11,6 +11,7 @@ Covers:
 """
 
 from django.test import TestCase
+
 from trip.hos_calculator import calculate_trip
 
 

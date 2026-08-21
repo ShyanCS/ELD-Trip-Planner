@@ -8,7 +8,8 @@ Covers:
 """
 
 from django.test import TestCase
-from trip.hos_calculator import calculate_trip, _hours_to_time_str
+
+from trip.hos_calculator import _hours_to_time_str, calculate_trip
 
 
 class TestHelpers(TestCase):

@@ -8,9 +8,9 @@ Functions:
 """
 
 import math
+
 import requests
 from django.conf import settings
-
 
 # ORS API base URLs
 ORS_BASE_URL = 'https://api.openrouteservice.org'
@@ -66,7 +66,7 @@ def geocode(place_name):
     )
     try:
         response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
+    except requests.exceptions.HTTPError:
         if response.status_code == 403:
             raise ValueError(
                 "ORS API key is invalid or expired. "
@@ -131,7 +131,7 @@ def get_route(coords_list):
     )
     try:
         response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
+    except requests.exceptions.HTTPError:
         if response.status_code == 403:
             raise ValueError(
                 "ORS API key is invalid or expired. "

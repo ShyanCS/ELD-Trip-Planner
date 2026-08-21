@@ -5,13 +5,14 @@ Pipeline:  Request → Validate → Geocode → Route → HOS Calculate → Resp
 """
 
 import logging
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
 
-from .serializers import TripPlanSerializer
-from .geocoder import geocode, get_route, get_intermediate_point, clear_cache
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .geocoder import clear_cache, geocode, get_intermediate_point, get_route
 from .hos_calculator import calculate_trip
+from .serializers import TripPlanSerializer
 
 logger = logging.getLogger(__name__)
 
