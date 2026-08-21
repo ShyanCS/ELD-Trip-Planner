@@ -2,7 +2,18 @@
 Trip serializers — input validation for trip planning requests.
 """
 
+from django.core.validators import RegexValidator
 from rest_framework import serializers
+
+# Validates that a location string contains only printable, address-safe characters.
+# Rejects control characters, SQL injection attempts, and script tags.
+_location_validator = RegexValidator(
+    regex=r"^[\w\s,.()\'\"\-#&/]+$",
+    message=(
+        "Location must contain only letters, numbers, spaces, and common "
+        "address characters (, . ( ) ' \" - # & /)."
+    ),
+)
 
 
 class TripPlanSerializer(serializers.Serializer):
@@ -18,14 +29,17 @@ class TripPlanSerializer(serializers.Serializer):
     """
     current_location = serializers.CharField(
         max_length=200,
+        validators=[_location_validator],
         help_text="Driver's current city/address, e.g. 'Chicago, IL'"
     )
     pickup_location = serializers.CharField(
         max_length=200,
+        validators=[_location_validator],
         help_text="Load pickup city/address, e.g. 'Kansas City, MO'"
     )
     dropoff_location = serializers.CharField(
         max_length=200,
+        validators=[_location_validator],
         help_text="Load dropoff city/address, e.g. 'Los Angeles, CA'"
     )
     current_cycle_used = serializers.FloatField(
@@ -58,3 +72,13 @@ class TripPlanSerializer(serializers.Serializer):
         if not value:
             raise serializers.ValidationError("Dropoff location cannot be empty.")
         return value
+
+    def validate(self, data):
+        """Cross-field validation: pickup and dropoff must differ."""
+        pickup = data.get("pickup_location", "").strip().lower()
+        dropoff = data.get("dropoff_location", "").strip().lower()
+        if pickup and dropoff and pickup == dropoff:
+            raise serializers.ValidationError(
+                {"dropoff_location": "Pickup and dropoff locations must be different."}
+            )
+        return data
