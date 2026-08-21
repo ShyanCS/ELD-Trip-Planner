@@ -1,5 +1,4 @@
 # backend/config/logging.py
-import os
 from decouple import config
 
 DEBUG = config('DEBUG', default=True, cast=bool)
