@@ -5,10 +5,10 @@ All ORS API calls are mocked — no real API key needed.
 Tests verify the full pipeline: validation → geocoding → routing → HOS → response.
 """
 
-from unittest.mock import MagicMock, patch
-import responses
 import re
+from unittest.mock import MagicMock, patch
 
+import responses
 from django.test import TestCase
 from rest_framework.test import APIClient
 
