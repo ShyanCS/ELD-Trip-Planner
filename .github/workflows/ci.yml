@@ -39,6 +39,12 @@ jobs:
       - name: Install backend dependencies
         run: pip install -r requirements.lock
 
+      - name: Verify requirements.lock is up-to-date
+        run: |
+          pip install -r requirements.txt
+          pip freeze > requirements.lock.new
+          cmp requirements.lock requirements.lock.new || (echo "requirements.lock is stale! Run 'pip freeze > requirements.lock'" && exit 1)
+
       - name: Install coverage
         run: pip install coverage
 
