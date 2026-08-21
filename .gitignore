@@ -1,0 +1,53 @@
+# ─── Python / Django ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+
+# ─── Node / React ─────────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/build/
+
+# ─── Environment files (NEVER commit real .env files) ─────────────────────────
+.env
+frontend/.env
+backend/.env
+*.env.local
+*.env.*.local
+
+# ─── IDE / OS ─────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+.vscode/
+.idea/
+
+# ─── Testing / Coverage ───────────────────────────────────────────────────────
+.coverage
+htmlcov/
+coverage.xml
+.pytest_cache/
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+*.bak
+*.swp
+*.tmp
