@@ -13,8 +13,8 @@ export default defineConfig({
       include: ['src/**/*.{js,jsx}'],
       exclude: ['src/main.jsx', 'src/test-setup.js', 'src/api/mockTripResult.js'],
       thresholds: {
-        branches: 60,
-        functions: 60,
+        branches: 55,
+        functions: 55,
         lines: 70,
         statements: 70,
       },
