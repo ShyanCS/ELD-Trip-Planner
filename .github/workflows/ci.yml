@@ -41,9 +41,9 @@ jobs:
 
       - name: Verify requirements.lock is up-to-date
         run: |
-          pip install -r requirements.txt
-          pip freeze > requirements.lock.new
-          cmp requirements.lock requirements.lock.new || (echo "requirements.lock is stale! Run 'pip freeze > requirements.lock'" && exit 1)
+          pip install pip-tools
+          pip-compile requirements.in --output-file requirements.lock.new --no-header
+          cmp requirements.lock requirements.lock.new || (echo "requirements.lock is stale! Run 'pip-compile requirements.in --output-file requirements.lock --no-header'" && exit 1)
 
       - name: Install coverage
         run: pip install coverage
