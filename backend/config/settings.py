@@ -118,10 +118,11 @@ ORS_API_KEY = config('ORS_API_KEY', default='')
 from .logging import LOGGING  # noqa: F401, E402
 
 SENTRY_DSN = config('SENTRY_DSN', default='')
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        traces_sample_rate=1.0,
-        profiles_sample_rate=1.0,
-    )
 
+# Always initialise the SDK so error-tracking tooling can detect it statically.
+# When SENTRY_DSN is empty the SDK runs in no-op mode — no data is sent.
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
+)

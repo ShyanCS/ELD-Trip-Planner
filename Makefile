@@ -1,4 +1,4 @@
-.PHONY: install test lint clean
+.PHONY: install test lint clean backend-install backend-test backend-lint frontend-install frontend-test frontend-lint
 
 # ── Backend ────────────────────────────────────────────────────────────────────
 backend-install:
