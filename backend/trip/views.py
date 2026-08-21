@@ -16,6 +16,25 @@ from .hos_calculator import calculate_trip
 logger = logging.getLogger(__name__)
 
 
+class HealthView(APIView):
+    """
+    GET /api/health/
+
+    Lightweight liveness probe for load balancers and monitoring.
+    Returns HTTP 200 with service metadata when the Django process is healthy.
+    """
+
+    def get(self, request):
+        return Response(
+            {
+                "status": "ok",
+                "service": "eld-trip-planner",
+                "version": "1.0.0",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class TripPlanView(APIView):
     """
     POST /api/trip/plan/
