@@ -6,61 +6,46 @@ Tests verify the full pipeline: validation → geocoding → routing → HOS →
 """
 
 from unittest.mock import MagicMock, patch
+import responses
+import re
 
 from django.test import TestCase
 from rest_framework.test import APIClient
 
 # ─── Mock Response Factories ────────────────────────────────────────────────
 
-def _mock_geocode_responses():
-    """
-    Returns a side_effect function for requests.get that serves geocode
-    and reverse-geocode responses based on the URL params.
-    """
+def _setup_mock_geocode_responses():
     geocode_db = {
         'chicago': (41.8781, -87.6298, 'Chicago, IL, USA'),
         'kansas city': (39.0997, -94.5786, 'Kansas City, MO, USA'),
         'los angeles': (34.0522, -118.2437, 'Los Angeles, CA, USA'),
     }
 
-    def side_effect(url, **kwargs):
-        mock_resp = MagicMock()
-        mock_resp.status_code = 200
-        mock_resp.raise_for_status = MagicMock()
+    def geocode_callback(request):
+        import urllib.parse
+        parsed = urllib.parse.urlparse(request.url)
+        qs = urllib.parse.parse_qs(parsed.query)
+        text = qs.get('text', [''])[0].lower()
+        for key, (lat, lon, label) in geocode_db.items():
+            if key in text:
+                return (200, {}, '{"features": [{"geometry": {"coordinates": ['+str(lon)+', '+str(lat)+']}, "properties": {"label": "'+label+'"}}]}')
+        return (200, {}, '{"features": []}')
 
-        params = kwargs.get('params', {})
+    def reverse_geocode_callback(request):
+        return (200, {}, '{"features": [{"properties": {"locality": "SomeCity", "region_a": "ST", "label": "SomeCity, ST"}}]}')
 
-        if '/geocode/search' in url:
-            text = params.get('text', '').lower()
-            for key, (lat, lon, label) in geocode_db.items():
-                if key in text:
-                    mock_resp.json.return_value = {
-                        'features': [{
-                            'geometry': {'coordinates': [lon, lat]},
-                            'properties': {'label': label},
-                        }]
-                    }
-                    return mock_resp
-
-            # Unknown location
-            mock_resp.json.return_value = {'features': []}
-            return mock_resp
-
-        elif '/geocode/reverse' in url:
-            mock_resp.json.return_value = {
-                'features': [{
-                    'properties': {
-                        'locality': 'SomeCity',
-                        'region_a': 'ST',
-                        'label': 'SomeCity, ST',
-                    }
-                }]
-            }
-            return mock_resp
-
-        return mock_resp
-
-    return side_effect
+    responses.add_callback(
+        responses.GET,
+        re.compile(r'^https://api\.openrouteservice\.org/geocode/search.*$'),
+        callback=geocode_callback,
+        content_type='application/json',
+    )
+    responses.add_callback(
+        responses.GET,
+        re.compile(r'^https://api\.openrouteservice\.org/geocode/reverse.*$'),
+        callback=reverse_geocode_callback,
+        content_type='application/json',
+    )
 
 
 def _mock_route_response(distance_meters, duration_seconds, coords):
@@ -85,41 +70,31 @@ def _mock_route_response(distance_meters, duration_seconds, coords):
     return mock_resp
 
 
-def _mock_route_side_effect():
-    """
-    Returns a side_effect for requests.post that returns different routes
-    based on the coordinates in the request body.
-    """
+def _setup_mock_route_responses():
     call_count = [0]
-
-    def side_effect(url, **kwargs):
+    def route_callback(request):
         call_count[0] += 1
-
         if call_count[0] == 1:
-            # Route 1: Current → Pickup (~510 miles)
-            return _mock_route_response(
-                distance_meters=820000,   # ~510 miles
-                duration_seconds=29520,   # ~8.2 hours
-                coords=[
-                    [-87.63, 41.88],
-                    [-91.13, 40.78],
-                    [-94.58, 39.10],
-                ],
-            )
+            body = _mock_route_response(
+                distance_meters=820000,
+                duration_seconds=29520,
+                coords=[[-87.63, 41.88], [-91.13, 40.78], [-94.58, 39.10]]
+            ).json()
         else:
-            # Route 2: Pickup → Dropoff (~1600 miles)
-            return _mock_route_response(
-                distance_meters=2575000,  # ~1600 miles
-                duration_seconds=86400,   # ~24 hours
-                coords=[
-                    [-94.58, 39.10],
-                    [-101.84, 35.22],
-                    [-110.92, 32.22],
-                    [-118.24, 34.05],
-                ],
-            )
+            body = _mock_route_response(
+                distance_meters=2575000,
+                duration_seconds=86400,
+                coords=[[-94.58, 39.10], [-101.84, 35.22], [-110.92, 32.22], [-118.24, 34.05]]
+            ).json()
+        import json
+        return (200, {}, json.dumps(body))
 
-    return side_effect
+    responses.add_callback(
+        responses.POST,
+        'https://api.openrouteservice.org/v2/directions/driving-hgv/geojson',
+        callback=route_callback,
+        content_type='application/json',
+    )
 
 
 # ─── Test Cases ──────────────────────────────────────────────────────────────
@@ -245,13 +220,12 @@ class TestTripPlanViewSuccess(TestCase):
         self.client = APIClient()
         self.url = '/api/trip/plan/'
 
-    @patch('trip.geocoder.requests.post')
-    @patch('trip.geocoder.requests.get')
-    def test_valid_trip_returns_200(self, mock_get, mock_post, mock_settings):
+    @responses.activate
+    def test_valid_trip_returns_200(self, mock_settings):
         """Valid trip request returns 200 with expected structure."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.side_effect = _mock_geocode_responses()
-        mock_post.side_effect = _mock_route_side_effect()
+        _setup_mock_geocode_responses()
+        _setup_mock_route_responses()
 
         response = self.client.post(self.url, {
             'current_location': 'Chicago, IL',
@@ -262,13 +236,12 @@ class TestTripPlanViewSuccess(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
-    @patch('trip.geocoder.requests.post')
-    @patch('trip.geocoder.requests.get')
-    def test_response_has_route(self, mock_get, mock_post, mock_settings):
+    @responses.activate
+    def test_response_has_route(self, mock_settings):
         """Response contains route object with distance, duration, geometry."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.side_effect = _mock_geocode_responses()
-        mock_post.side_effect = _mock_route_side_effect()
+        _setup_mock_geocode_responses()
+        _setup_mock_route_responses()
 
         response = self.client.post(self.url, {
             'current_location': 'Chicago, IL',
@@ -284,13 +257,12 @@ class TestTripPlanViewSuccess(TestCase):
         self.assertIn('waypoints', route)
         self.assertGreater(route['total_distance_miles'], 0)
 
-    @patch('trip.geocoder.requests.post')
-    @patch('trip.geocoder.requests.get')
-    def test_response_has_trip_summary(self, mock_get, mock_post, mock_settings):
+    @responses.activate
+    def test_response_has_trip_summary(self, mock_settings):
         """Response contains trip_summary with trip_days and total_driving_hours."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.side_effect = _mock_geocode_responses()
-        mock_post.side_effect = _mock_route_side_effect()
+        _setup_mock_geocode_responses()
+        _setup_mock_route_responses()
 
         response = self.client.post(self.url, {
             'current_location': 'Chicago, IL',
@@ -308,13 +280,12 @@ class TestTripPlanViewSuccess(TestCase):
         self.assertGreater(summary['trip_days'], 0)
         self.assertGreater(summary['total_driving_hours'], 0)
 
-    @patch('trip.geocoder.requests.post')
-    @patch('trip.geocoder.requests.get')
-    def test_response_has_daily_logs(self, mock_get, mock_post, mock_settings):
+    @responses.activate
+    def test_response_has_daily_logs(self, mock_settings):
         """Response contains daily_logs array with correct structure."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.side_effect = _mock_geocode_responses()
-        mock_post.side_effect = _mock_route_side_effect()
+        _setup_mock_geocode_responses()
+        _setup_mock_route_responses()
 
         response = self.client.post(self.url, {
             'current_location': 'Chicago, IL',
@@ -335,13 +306,12 @@ class TestTripPlanViewSuccess(TestCase):
         self.assertIn('miles_today', day1)
         self.assertIn('remarks', day1)
 
-    @patch('trip.geocoder.requests.post')
-    @patch('trip.geocoder.requests.get')
-    def test_daily_logs_sum_to_24(self, mock_get, mock_post, mock_settings):
+    @responses.activate
+    def test_daily_logs_sum_to_24(self, mock_settings):
         """Every daily log totals sum to 24.0."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.side_effect = _mock_geocode_responses()
-        mock_post.side_effect = _mock_route_side_effect()
+        _setup_mock_geocode_responses()
+        _setup_mock_route_responses()
 
         response = self.client.post(self.url, {
             'current_location': 'Chicago, IL',
@@ -355,13 +325,12 @@ class TestTripPlanViewSuccess(TestCase):
             self.assertAlmostEqual(total, 24.0, places=1,
                                    msg=f"Day {log['day']} totals sum to {total}")
 
-    @patch('trip.geocoder.requests.post')
-    @patch('trip.geocoder.requests.get')
-    def test_waypoints_include_required_types(self, mock_get, mock_post, mock_settings):
+    @responses.activate
+    def test_waypoints_include_required_types(self, mock_settings):
         """Waypoints should include at least start, pickup, and dropoff."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.side_effect = _mock_geocode_responses()
-        mock_post.side_effect = _mock_route_side_effect()
+        _setup_mock_geocode_responses()
+        _setup_mock_route_responses()
 
         response = self.client.post(self.url, {
             'current_location': 'Chicago, IL',
@@ -377,13 +346,12 @@ class TestTripPlanViewSuccess(TestCase):
         self.assertIn('pickup', types)
         self.assertIn('dropoff', types)
 
-    @patch('trip.geocoder.requests.post')
-    @patch('trip.geocoder.requests.get')
-    def test_merged_geometry(self, mock_get, mock_post, mock_settings):
+    @responses.activate
+    def test_merged_geometry(self, mock_settings):
         """Route geometry should be a merged LineString."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.side_effect = _mock_geocode_responses()
-        mock_post.side_effect = _mock_route_side_effect()
+        _setup_mock_geocode_responses()
+        _setup_mock_route_responses()
 
         response = self.client.post(self.url, {
             'current_location': 'Chicago, IL',
@@ -406,11 +374,11 @@ class TestTripPlanViewErrors(TestCase):
         self.client = APIClient()
         self.url = '/api/trip/plan/'
 
-    @patch('trip.geocoder.requests.get')
-    def test_unknown_location_returns_400(self, mock_get, mock_settings):
+    @responses.activate
+    def test_unknown_location_returns_400(self, mock_settings):
         """Unknown location geocode failure returns 400."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.side_effect = _mock_geocode_responses()
+        _setup_mock_geocode_responses()
 
         response = self.client.post(self.url, {
             'current_location': 'Nonexistent Place XYZ',

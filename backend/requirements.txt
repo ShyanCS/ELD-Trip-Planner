@@ -6,3 +6,5 @@ python-decouple==3.8
 gunicorn==22.0.0
 whitenoise==6.12.0
 python-json-logger==4.2.0
+responses==0.25.3
+sentry-sdk==2.14.0

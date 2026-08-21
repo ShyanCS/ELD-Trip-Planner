@@ -1,11 +1,11 @@
 """
 Tests for the geocoder module.
 
-All ORS API calls are mocked — no real API key needed for testing.
+All ORS API calls are mocked using the responses library — no real API key needed for testing.
 """
 
-from unittest.mock import MagicMock, patch
-
+from unittest.mock import patch
+import responses
 from django.test import TestCase
 
 from trip.geocoder import _haversine_meters, clear_cache, geocode, get_intermediate_point, get_route
@@ -13,33 +13,18 @@ from trip.geocoder import _haversine_meters, clear_cache, geocode, get_intermedi
 # ─── Mock Response Factories ────────────────────────────────────────────────
 
 def _mock_geocode_response(lat, lon, label):
-    """Create a mock geocode API response."""
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {
+    return {
         'features': [{
             'geometry': {'coordinates': [lon, lat]},
             'properties': {'label': label},
         }]
     }
-    mock_resp.raise_for_status = MagicMock()
-    return mock_resp
-
 
 def _mock_geocode_empty_response():
-    """Create a mock geocode response with no results."""
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {'features': []}
-    mock_resp.raise_for_status = MagicMock()
-    return mock_resp
-
+    return {'features': []}
 
 def _mock_route_response(distance_meters, duration_seconds, coordinates):
-    """Create a mock directions API response."""
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {
+    return {
         'features': [{
             'properties': {
                 'summary': {
@@ -53,15 +38,9 @@ def _mock_route_response(distance_meters, duration_seconds, coordinates):
             }
         }]
     }
-    mock_resp.raise_for_status = MagicMock()
-    return mock_resp
-
 
 def _mock_reverse_geocode_response(city, region):
-    """Create a mock reverse geocode response."""
-    mock_resp = MagicMock()
-    mock_resp.status_code = 200
-    mock_resp.json.return_value = {
+    return {
         'features': [{
             'properties': {
                 'locality': city,
@@ -70,8 +49,6 @@ def _mock_reverse_geocode_response(city, region):
             }
         }]
     }
-    mock_resp.raise_for_status = MagicMock()
-    return mock_resp
 
 
 # ─── Test Cases ──────────────────────────────────────────────────────────────
@@ -83,11 +60,16 @@ class TestGeocode(TestCase):
     def setUp(self):
         clear_cache()
 
-    @patch('trip.geocoder.requests.get')
-    def test_geocode_chicago(self, mock_get, mock_settings):
+    @responses.activate
+    def test_geocode_chicago(self, mock_settings):
         """Geocoding 'Chicago, IL' returns valid coordinates."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.return_value = _mock_geocode_response(41.8781, -87.6298, 'Chicago, IL, USA')
+        responses.add(
+            responses.GET,
+            'https://api.openrouteservice.org/geocode/search',
+            json=_mock_geocode_response(41.8781, -87.6298, 'Chicago, IL, USA'),
+            status=200
+        )
 
         result = geocode('Chicago, IL')
 
@@ -95,23 +77,33 @@ class TestGeocode(TestCase):
         self.assertAlmostEqual(result['lon'], -87.6298, places=3)
         self.assertEqual(result['name'], 'Chicago, IL, USA')
 
-    @patch('trip.geocoder.requests.get')
-    def test_geocode_uses_cache(self, mock_get, mock_settings):
+    @responses.activate
+    def test_geocode_uses_cache(self, mock_settings):
         """Second call with same name uses cache, doesn't make API call."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.return_value = _mock_geocode_response(41.8781, -87.6298, 'Chicago, IL, USA')
+        responses.add(
+            responses.GET,
+            'https://api.openrouteservice.org/geocode/search',
+            json=_mock_geocode_response(41.8781, -87.6298, 'Chicago, IL, USA'),
+            status=200
+        )
 
         geocode('Chicago, IL')
         geocode('Chicago, IL')
 
         # Should only call the API once
-        self.assertEqual(mock_get.call_count, 1)
+        self.assertEqual(len(responses.calls), 1)
 
-    @patch('trip.geocoder.requests.get')
-    def test_geocode_not_found_raises(self, mock_get, mock_settings):
+    @responses.activate
+    def test_geocode_not_found_raises(self, mock_settings):
         """Geocoding an unknown location raises ValueError."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.return_value = _mock_geocode_empty_response()
+        responses.add(
+            responses.GET,
+            'https://api.openrouteservice.org/geocode/search',
+            json=_mock_geocode_empty_response(),
+            status=200
+        )
 
         with self.assertRaises(ValueError) as ctx:
             geocode('Nonexistent Place XYZ')
@@ -133,16 +125,21 @@ class TestGeocode(TestCase):
 class TestGetRoute(TestCase):
     """Tests for the get_route() function."""
 
-    @patch('trip.geocoder.requests.post')
-    def test_route_returns_distance_and_duration(self, mock_post, mock_settings):
+    @responses.activate
+    def test_route_returns_distance_and_duration(self, mock_settings):
         """Route between two cities returns positive distance and duration."""
         mock_settings.ORS_API_KEY = 'test-key'
 
         # ~480 km (298 miles), ~4.5 hours
-        mock_post.return_value = _mock_route_response(
-            distance_meters=480000,
-            duration_seconds=16200,
-            coordinates=[[-87.63, 41.88], [-89.65, 39.78], [-90.19, 38.63]],
+        responses.add(
+            responses.POST,
+            'https://api.openrouteservice.org/v2/directions/driving-hgv/geojson',
+            json=_mock_route_response(
+                distance_meters=480000,
+                duration_seconds=16200,
+                coordinates=[[-87.63, 41.88], [-89.65, 39.78], [-90.19, 38.63]],
+            ),
+            status=200
         )
 
         result = get_route([[-87.63, 41.88], [-90.19, 38.63]])
@@ -154,16 +151,21 @@ class TestGetRoute(TestCase):
         self.assertIn('geometry', result)
         self.assertEqual(result['geometry']['type'], 'LineString')
 
-    @patch('trip.geocoder.requests.post')
-    def test_route_long_distance(self, mock_post, mock_settings):
+    @responses.activate
+    def test_route_long_distance(self, mock_settings):
         """Route for a long trip returns correct mile conversion."""
         mock_settings.ORS_API_KEY = 'test-key'
 
         # ~2,575 km (1,600 miles)
-        mock_post.return_value = _mock_route_response(
-            distance_meters=2575000,
-            duration_seconds=86400,
-            coordinates=[[-94.57, 39.09], [-97.33, 37.69], [-101.84, 35.22], [-118.24, 34.05]],
+        responses.add(
+            responses.POST,
+            'https://api.openrouteservice.org/v2/directions/driving-hgv/geojson',
+            json=_mock_route_response(
+                distance_meters=2575000,
+                duration_seconds=86400,
+                coordinates=[[-94.57, 39.09], [-97.33, 37.69], [-101.84, 35.22], [-118.24, 34.05]],
+            ),
+            status=200
         )
 
         result = get_route([[-94.57, 39.09], [-118.24, 34.05]])
@@ -176,11 +178,17 @@ class TestGetRoute(TestCase):
 class TestGetIntermediatePoint(TestCase):
     """Tests for the get_intermediate_point() function."""
 
-    @patch('trip.geocoder.requests.get')
-    def test_intermediate_point_at_known_distance(self, mock_get, mock_settings):
+    @responses.activate
+    def test_intermediate_point_at_known_distance(self, mock_settings):
         """Finding a point partway along a route returns valid coordinates."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.return_value = _mock_reverse_geocode_response('Springfield', 'IL')
+        
+        responses.add(
+            responses.GET,
+            'https://api.openrouteservice.org/geocode/reverse',
+            json=_mock_reverse_geocode_response('Springfield', 'IL'),
+            status=200
+        )
 
         # Create a simple geometry: Chicago → St Louis (roughly straight south)
         # These points are ~300 miles apart
@@ -202,11 +210,17 @@ class TestGetIntermediatePoint(TestCase):
         self.assertGreater(result['lat'], 38.0)
         self.assertLess(result['lat'], 42.0)
 
-    @patch('trip.geocoder.requests.get')
-    def test_intermediate_point_beyond_route(self, mock_get, mock_settings):
+    @responses.activate
+    def test_intermediate_point_beyond_route(self, mock_settings):
         """If target distance exceeds route, returns the last point."""
         mock_settings.ORS_API_KEY = 'test-key'
-        mock_get.return_value = _mock_reverse_geocode_response('St Louis', 'MO')
+        
+        responses.add(
+            responses.GET,
+            'https://api.openrouteservice.org/geocode/reverse',
+            json=_mock_reverse_geocode_response('St Louis', 'MO'),
+            status=200
+        )
 
         geometry = {
             'type': 'LineString',
