@@ -9,7 +9,8 @@ Covers:
 
 from django.test import TestCase
 
-from trip.hos_calculator import _hours_to_time_str, calculate_trip
+from trip.hos_calculator import calculate_trip
+from trip.hos_helpers import hours_to_time_str as _hours_to_time_str
 
 
 class TestHelpers(TestCase):

@@ -28,6 +28,16 @@ import logging
 from dataclasses import field  # noqa: F401 — re-exported for backward compat
 from datetime import datetime, timedelta
 
+from .hos_helpers import (
+    add_remark as _add_remark,
+)
+from .hos_helpers import (
+    assert_24h_invariant,
+    compute_day_totals,
+)
+from .hos_helpers import (
+    make_event as _make_event,
+)
 from .models_dataclasses import DailyLog, DutyEvent, StopEvent  # noqa: F401
 
 logger = logging.getLogger(__name__)
@@ -48,36 +58,6 @@ FUEL_STOP_HOURS = 1.0           # 1 hour
 MAX_CYCLE_HOURS = 70.0
 RESTART_HOURS = 34.0
 DEFAULT_START_HOUR = 8.0        # 08:00
-
-
-
-# ─── Helper Functions ────────────────────────────────────────────────────────
-
-def _hours_to_time_str(hours_since_midnight):
-    """Convert decimal hours to HH:MM string. E.g. 13.5 -> '13:30'."""
-    h = int(hours_since_midnight) % 24
-    m = int(round((hours_since_midnight % 1) * 60))
-    if m == 60:
-        h += 1
-        m = 0
-    return f"{h:02d}:{m:02d}"
-
-
-def _make_event(time_hours, status, location, duration, miles=0.0):
-    """Create a DutyEvent dict (serializable)."""
-    return {
-        'time': _hours_to_time_str(time_hours),
-        'status': status,
-        'location': location,
-        'hours': round(duration, 4),
-        'miles': round(miles, 1),
-    }
-
-
-def _add_remark(remarks, time_hours, location, activity):
-    """Add an entry to the remarks list."""
-    time_str = _hours_to_time_str(time_hours)
-    remarks.append(f"{time_str} {location} - {activity}")
 
 
 # ─── Main Calculator ────────────────────────────────────────────────────────
@@ -149,24 +129,8 @@ def calculate_trip(segments, current_cycle_used=0.0, start_date=None):
             last_location = day_events[-1]['location'] if day_events else 'Unknown'
             day_events.append(_make_event(current_time, 'off_duty', last_location, remaining))
 
-        # Calculate totals
-        totals = {
-            'off_duty': 0.0,
-            'sleeper_berth': 0.0,
-            'driving': 0.0,
-            'on_duty_not_driving': 0.0,
-        }
-        for e in day_events:
-            totals[e['status']] = round(totals[e['status']] + e['hours'], 4)
-
-        # Round totals for clean output
-        for k in totals:
-            totals[k] = round(totals[k], 2)
-
-        # Debug assertion: totals must sum to 24
-        total_sum = sum(totals.values())
-        assert abs(total_sum - HOURS_IN_DAY) < 0.02, \
-            f"Day {day_number} totals sum to {total_sum}, expected {HOURS_IN_DAY}. Events: {day_events}"
+        totals = compute_day_totals(day_events)
+        assert_24h_invariant(totals, day_number)
 
         log = {
             'day': day_number,
