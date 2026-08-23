@@ -1,0 +1,37 @@
+{
+  "name": "ELD Trip Planner",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "postCreateCommand": "pip install -r backend/requirements.txt && cd frontend && npm ci && cd ../backend && python manage.py migrate",
+  "forwardPorts": [8000, 5173],
+  "portsAttributes": {
+    "8000": { "label": "Django API", "onAutoForward": "notify" },
+    "5173": { "label": "Vite dev server", "onAutoForward": "notify" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "batisteo.vscode-django"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        },
+        "[javascript][javascriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        }
+      }
+    }
+  }
+}
