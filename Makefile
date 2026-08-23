@@ -1,4 +1,4 @@
-.PHONY: install test lint clean
+.PHONY: install test lint lock clean
 
 # ── Backend ────────────────────────────────────────────────────────────────────
 backend-install:
@@ -10,6 +10,10 @@ backend-test:
 
 backend-lint:
 	cd backend && ruff check .
+
+# Regenerate the pinned lockfile from requirements.in (single source of truth).
+lock:
+	cd backend && pip install pip-tools && pip-compile requirements.in --output-file requirements.txt --no-header
 
 # ── Frontend ───────────────────────────────────────────────────────────────────
 frontend-install:
