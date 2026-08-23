@@ -80,13 +80,39 @@ describe('App', () => {
 
   it('shows an error banner when planTrip rejects with a server error', async () => {
     planTrip.mockRejectedValueOnce({
-      response: { data: { error: 'ORS route not found' } },
+      response: {
+        data: {
+          error: { code: 'ROUTE_FAILED', message: 'ORS route not found' },
+        },
+      },
     });
     render(<App />);
     fillAndSubmitForm();
 
     await waitFor(() => {
       expect(screen.getByText(/ORS route not found/i)).toBeInTheDocument();
+    });
+  });
+
+  it('flattens validation details from the typed error schema', async () => {
+    planTrip.mockRejectedValueOnce({
+      response: {
+        data: {
+          error: {
+            code: 'VALIDATION_FAILED',
+            message: 'Validation failed',
+            details: { current_location: ['This field may not be blank.'] },
+          },
+        },
+      },
+    });
+    render(<App />);
+    fillAndSubmitForm();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/current_location: This field may not be blank\./i),
+      ).toBeInTheDocument();
     });
   });
 
@@ -112,7 +138,11 @@ describe('App', () => {
 
   it('dismissing the error clears it from the banner', async () => {
     planTrip.mockRejectedValueOnce({
-      response: { data: { error: 'Some error' } },
+      response: {
+        data: {
+          error: { code: 'GEOCODE_FAILED', message: 'Some error' },
+        },
+      },
     });
     render(<App />);
     fillAndSubmitForm();

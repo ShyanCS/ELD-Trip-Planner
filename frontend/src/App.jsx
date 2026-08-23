@@ -24,16 +24,22 @@ function App() {
       const result = await planTrip(formData);
       setTripResult(result);
     } catch (err) {
-      // Extract the best error message
-      if (err.response?.data?.error) {
-        setError(err.response.data.error);
-      } else if (err.response?.data?.details) {
-        // Validation errors from DRF — flatten them
-        const details = err.response.data.details;
-        const messages = Object.entries(details)
-          .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
-          .join(' · ');
-        setError(messages);
+      // Extract the best error message from the typed API error schema:
+      // { error: { code, message, details? } }
+      const apiError = err.response?.data?.error;
+      if (apiError && typeof apiError === 'object') {
+        const { message, details } = apiError;
+        if (details && Object.keys(details).length > 0) {
+          // Validation errors — flatten field messages
+          const messages = Object.entries(details)
+            .map(([field, msgs]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .join(' · ');
+          setError(messages);
+        } else {
+          setError(message);
+        }
+      } else if (typeof apiError === 'string') {
+        setError(apiError);
       } else if (err.code === 'ECONNABORTED') {
         setError('Request timed out. The server may be overloaded — please try again.');
       } else if (!err.response) {
