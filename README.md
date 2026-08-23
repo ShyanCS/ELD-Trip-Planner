@@ -118,11 +118,14 @@ full stack assessment/
 │   ├── manage.py
 │   ├── config/
 │   │   ├── settings.py              # Django settings (CORS, DRF, ORS key)
+│   │   ├── test_runner.py           # OfflineTestRunner — blocks network in tests
+│   │   ├── logging.py               # Structured JSON logging
 │   │   ├── urls.py                  # Root URL config
 │   │   └── wsgi.py
 │   └── trip/
 │       ├── views.py                 # TripPlanView — orchestrates the pipeline
 │       ├── serializers.py           # Input validation (locations, cycle hours)
+│       ├── exceptions.py            # TripPlanError hierarchy → typed API errors
 │       ├── hos_calculator.py        # 🧠 Core HOS compliance engine (495 lines)
 │       ├── geocoder.py              # ORS geocoding, routing, reverse geocoding
 │       ├── urls.py                  # /api/trip/plan/ endpoint
@@ -370,12 +373,28 @@ Plans a complete HOS-compliant trip with daily log generation.
 
 #### Error Responses
 
-| Status | Cause | Response |
-|--------|-------|----------|
-| 400 | Validation failed | `{"error": "Validation failed", "details": {...}}` |
-| 400 | Location not found | `{"error": "Could not find location: 'xyz'"}` |
-| 400 | API key missing/invalid | `{"error": "ORS_API_KEY is not configured..."}` |
-| 500 | Unexpected server error | `{"error": "An unexpected error occurred..."}` |
+All failures use a typed error schema: `{"error": {"code", "message", "details?"}}`.
+
+| Status | Code | Cause |
+|--------|------|-------|
+| 400 | `VALIDATION_FAILED` | Request body failed serializer validation (`details` holds field errors) |
+| 400 | `GEOCODE_FAILED` | Location not found, or `ORS_API_KEY` missing/invalid |
+| 400 | `ROUTE_FAILED` | Route could not be calculated between locations |
+| 400 | `HOS_FAILED` | Trip cannot be completed within HOS limits |
+| 503 | `UPSTREAM_UNAVAILABLE` | OpenRouteService unreachable — retry shortly |
+| 500 | `INTERNAL_ERROR` | Unexpected server error |
+
+Example:
+
+```json
+{
+  "error": {
+    "code": "GEOCODE_FAILED",
+    "message": "Could not find location: 'xyz'. Please check the spelling and try again.",
+    "details": { "location": "xyz" }
+  }
+}
+```
 
 ---
 
@@ -423,6 +442,15 @@ coverage run --source=trip manage.py test
 coverage report --fail-under=70
 ```
 
+### Fully Offline Test Runs
+
+The suite is guaranteed to make **zero outbound network calls**. `config/test_runner.py`
+(`OfflineTestRunner`, enabled via `TEST_RUNNER` in settings) blocks all non-loopback
+`socket.connect` and `getaddrinfo` calls for the duration of the run — any unmocked HTTP
+attempt raises `NetworkBlocked` and fails loudly. All OpenRouteService calls are mocked with
+the [responses](https://github.com/getsentry/responses) library, so no `ORS_API_KEY` is needed
+to run tests (even with your network cable unplugged).
+
 ### Run Frontend Tests (with coverage)
 
 ```bash
@@ -439,8 +467,11 @@ npm run test:coverage   # enforces 80% statements/lines, 65% branches, 75% funct
 | **HOS Multi-day** | `test_hos_calculator_multiday.py` | 600–2110mi, breaks, fuel stops, rest stops |
 | **HOS Edge Cases** | `test_hos_calculator_edge_cases.py` | Cycle limits, 34hr restart, zero-distance, 70h boundary |
 | **Serializer** | `test_serializers.py` | RegexValidator, cycle bounds, cross-field pickup≠dropoff |
-| **API Views** | `test_views.py` | Validation, success flow, error handling, health/metrics/version |
-| **Frontend** | `src/components/__tests__/` | ErrorBanner, LoadingSpinner, LogSheet, MapView, TripForm, TripSummary, TripTimeline (7 files, 55 tests) |
+| **API Views** | `test_views.py` | Validation, success flow, typed error schema, health/metrics/version |
+| **Geocoder** | `test_geocoder.py` | Geocode/route/reverse-geocode via mocked ORS responses |
+| **Offline Guard** | `test_offline_guard.py` | Network block fires on unmocked calls; loopback + mocks still work |
+| **Integration** | `test_integration_trip_plan.py` | End-to-end POST /api/trip/plan/ pipeline invariants |
+| **Frontend** | `src/components/__tests__/` + `App.test.jsx` | ErrorBanner, LoadingSpinner, LogSheet, MapView, TripForm, TripSummary, TripTimeline, App integration |
 
 ### Key Invariant
 

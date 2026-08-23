@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Typed API error schema: `trip/exceptions.py` defines a `TripPlanError` hierarchy
+  (`GEOCODE_FAILED`, `ROUTE_FAILED`, `HOS_FAILED`, `UPSTREAM_UNAVAILABLE`,
+  `VALIDATION_FAILED`, `INTERNAL_ERROR`) and `POST /api/trip/plan/` now returns
+  `{error: {code, message, details}}` for every failure mode
+- Upstream OpenRouteService outages surface as `503 UPSTREAM_UNAVAILABLE`
+  instead of an opaque 500
+- Fully offline test runs: `OfflineTestRunner` blocks all non-loopback
+  sockets/DNS during the suite; unmocked outbound calls fail loudly
+  (`trip/tests/test_offline_guard.py` pins the behavior)
+- Frontend production build gate (`npm run build`) in CI
+- Frontend dependency audit job (`npm audit --omit=dev --audit-level=high`) in CI
+
+### Changed
+- **BREAKING**: backend lockfile renamed `requirements.lock` → `requirements.txt`
+  (standard pip manifest name); install with `pip install -r requirements.txt`
+- **BREAKING**: API error responses moved from `{"error": "<string>"}` to the
+  typed schema above; frontend `App.jsx` consumes the new shape
+- README documents the error schema, offline testing guarantee, and updated
+  project structure/test inventory
 ## [1.0.0] - 2026-08-21
 
 ### Added
