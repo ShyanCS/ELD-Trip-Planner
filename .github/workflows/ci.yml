@@ -124,6 +124,9 @@ jobs:
       - name: Run frontend test suite with coverage
         run: npm run test:coverage
 
+      - name: Verify production build succeeds
+        run: npm run build
+
   # ─── Frontend: Lint ──────────────────────────────────────────────────────────
   frontend-lint:
     name: Frontend Lint (ESLint)
@@ -179,3 +182,35 @@ jobs:
 
       - name: Audit backend dependencies for known vulnerabilities
         run: pip-audit -r requirements.txt --progress-spinner off
+
+  # ─── Security: Frontend Dependency Audit ─────────────────────────────────────
+  frontend-audit:
+    name: Security Audit (npm audit)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Audit frontend dependencies for known vulnerabilities
+        run: npm audit --omit=dev --audit-level=high
