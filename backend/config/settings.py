@@ -15,6 +15,9 @@ SECRET_KEY = config('SECRET_KEY', default='dev-insecure-key-change-in-production
 DEBUG = config('DEBUG', default=True, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
 
+# Tests run fully offline: any unmocked outbound network call fails loudly.
+TEST_RUNNER = 'config.test_runner.OfflineTestRunner'
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
