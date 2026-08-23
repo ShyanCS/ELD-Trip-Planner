@@ -32,18 +32,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.lock') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
       - name: Install backend dependencies
-        run: pip install -r requirements.lock
+        run: pip install -r requirements.txt
 
-      - name: Verify requirements.lock is up-to-date
+      - name: Verify requirements.txt is up-to-date
         run: |
           pip install pip-tools
-          pip-compile requirements.in --output-file requirements.lock.new --no-header
-          diff -u --strip-trailing-cr requirements.lock requirements.lock.new || (echo "requirements.lock is stale! Run 'pip-compile requirements.in --output-file requirements.lock --no-header'" && exit 1)
+          pip-compile requirements.in --output-file requirements.txt.new --no-header
+          diff -u --strip-trailing-cr requirements.txt requirements.txt.new || (echo "requirements.txt is stale! Run 'pip-compile requirements.in --output-file requirements.txt --no-header'" && exit 1)
 
       - name: Install coverage
         run: pip install coverage
@@ -178,4 +178,4 @@ jobs:
         run: pip install pip-audit
 
       - name: Audit backend dependencies for known vulnerabilities
-        run: pip-audit -r requirements.lock --progress-spinner off
+        run: pip-audit -r requirements.txt --progress-spinner off

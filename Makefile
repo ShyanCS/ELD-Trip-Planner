@@ -2,7 +2,7 @@
 
 # ── Backend ────────────────────────────────────────────────────────────────────
 backend-install:
-	cd backend && pip install -r requirements.lock
+	cd backend && pip install -r requirements.txt
 
 backend-test:
 	cd backend && python -m coverage run --source=trip manage.py test trip.tests
