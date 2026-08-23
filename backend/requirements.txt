@@ -17,12 +17,10 @@ django-cors-headers==4.9.0
     # via -r requirements.in
 djangorestframework==3.18.0
     # via -r requirements.in
-gunicorn==22.0.0
+gunicorn==26.1.0
     # via -r requirements.in
 idna==3.19
     # via requests
-packaging==26.3
-    # via gunicorn
 python-decouple==3.8
     # via -r requirements.in
 python-json-logger==4.2.0
