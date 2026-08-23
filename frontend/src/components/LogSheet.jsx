@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import './LogSheet.css';
 
 /**
@@ -453,3 +454,7 @@ function drawRemarks(ctx, remarks) {
     ctx.fillText(`+ ${remarks.length - 5} more…`, x + 4, y);
   }
 }
+
+LogSheet.propTypes = {
+  log: PropTypes.object.isRequired,
+};

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import './MapView.css';
@@ -156,3 +157,8 @@ export default function MapView({ geometry, waypoints }) {
     </div>
   );
 }
+
+MapView.propTypes = {
+  geometry: PropTypes.object,
+  waypoints: PropTypes.array,
+};

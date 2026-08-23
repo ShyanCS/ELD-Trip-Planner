@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import './TripSummary.css';
 
 /**
@@ -68,3 +69,10 @@ export default function TripSummary({ route, dailyLogs, stopEvents, onReset }) {
     </div>
   );
 }
+
+TripSummary.propTypes = {
+  route: PropTypes.object.isRequired,
+  dailyLogs: PropTypes.array.isRequired,
+  stopEvents: PropTypes.array,
+  onReset: PropTypes.func.isRequired,
+};

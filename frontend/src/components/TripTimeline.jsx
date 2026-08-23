@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import './TripTimeline.css';
 
 /**
@@ -68,3 +69,7 @@ export default function TripTimeline({ dailyLogs }) {
     </div>
   );
 }
+
+TripTimeline.propTypes = {
+  dailyLogs: PropTypes.array.isRequired,
+};

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import './LoadingSpinner.css';
 
 /**
@@ -18,3 +19,7 @@ export default function LoadingSpinner({ message = 'Calculating HOS-compliant ro
     </div>
   );
 }
+
+LoadingSpinner.propTypes = {
+  message: PropTypes.string,
+};

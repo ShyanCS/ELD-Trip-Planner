@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import './TripForm.css';
 
 /**
@@ -239,3 +240,8 @@ export default function TripForm({ onSubmit, isLoading }) {
     </form>
   );
 }
+
+TripForm.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool,
+};

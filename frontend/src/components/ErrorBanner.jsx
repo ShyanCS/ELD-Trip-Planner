@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types';
+
 /**
  * ErrorBanner — dismissible red error banner.
  *
@@ -30,3 +32,8 @@ export default function ErrorBanner({ message, onDismiss }) {
     </div>
   );
 }
+
+ErrorBanner.propTypes = {
+  message: PropTypes.string,
+  onDismiss: PropTypes.func.isRequired,
+};
