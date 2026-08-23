@@ -9,96 +9,96 @@
 
 :root {
   /* Surface palette */
-  --bg-root:        #0e0906;
-  --bg-primary:     #1c110b;
-  --bg-secondary:   #261a12;
-  --bg-tertiary:    #33231a;
-  --bg-elevated:    #3d2c22;
+  --bg-root: #0e0906;
+  --bg-primary: #1c110b;
+  --bg-secondary: #261a12;
+  --bg-tertiary: #33231a;
+  --bg-elevated: #3d2c22;
 
   /* Border palette */
   --border-default: #4a362a;
-  --border-subtle:  #3d2c22;
-  --border-focus:   #ffb690;
+  --border-subtle: #3d2c22;
+  --border-focus: #ffb690;
 
   /* Text palette */
-  --text-primary:   #f5e6dc;
+  --text-primary: #f5e6dc;
   --text-secondary: #c4a48e;
-  --text-muted:     #8a7060;
-  --text-inverse:   #0e0906;
+  --text-muted: #8a7060;
+  --text-inverse: #0e0906;
 
   /* Accent palette */
-  --accent-primary:  #ffb690;
-  --accent-hover:    #ffc9ab;
-  --accent-active:   #ff9f6e;
-  --accent-orange:   #F97316;
-  --accent-subtle:   rgba(255, 182, 144, 0.08);
+  --accent-primary: #ffb690;
+  --accent-hover: #ffc9ab;
+  --accent-active: #ff9f6e;
+  --accent-orange: #f97316;
+  --accent-subtle: rgba(255, 182, 144, 0.08);
 
   /* Status colors */
-  --status-driving:  #F97316;
-  --status-onduty:   #EAB308;
-  --status-sleeper:  #8B5CF6;
-  --status-offduty:  #6B7280;
-  --status-success:  #22C55E;
-  --status-error:    #EF4444;
-  --status-warning:  #F59E0B;
+  --status-driving: #f97316;
+  --status-onduty: #eab308;
+  --status-sleeper: #8b5cf6;
+  --status-offduty: #6b7280;
+  --status-success: #22c55e;
+  --status-error: #ef4444;
+  --status-warning: #f59e0b;
 
   /* Waypoint colors */
-  --wp-start:   #22C55E;
-  --wp-pickup:  #3B82F6;
-  --wp-fuel:    #F59E0B;
-  --wp-rest:    #8B5CF6;
-  --wp-dropoff: #EF4444;
+  --wp-start: #22c55e;
+  --wp-pickup: #3b82f6;
+  --wp-fuel: #f59e0b;
+  --wp-rest: #8b5cf6;
+  --wp-dropoff: #ef4444;
 
   /* Typography */
-  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono:  'JetBrains Mono', 'Fira Code', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
-  --text-xs:   0.75rem;    /* 12px */
-  --text-sm:   0.8125rem;  /* 13px */
-  --text-base: 0.9375rem;  /* 15px */
-  --text-lg:   1.125rem;   /* 18px */
-  --text-xl:   1.375rem;   /* 22px */
-  --text-2xl:  1.75rem;    /* 28px */
-  --text-3xl:  2.25rem;    /* 36px */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.8125rem; /* 13px */
+  --text-base: 0.9375rem; /* 15px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.375rem; /* 22px */
+  --text-2xl: 1.75rem; /* 28px */
+  --text-3xl: 2.25rem; /* 36px */
 
-  --weight-light:    300;
-  --weight-regular:  400;
-  --weight-medium:   500;
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
   --weight-semibold: 600;
-  --weight-bold:     700;
+  --weight-bold: 700;
 
-  --leading-tight:  1.2;
+  --leading-tight: 1.2;
   --leading-normal: 1.5;
   --leading-relaxed: 1.65;
 
   --tracking-tight: -0.02em;
   --tracking-normal: 0;
-  --tracking-wide:  0.04em;
+  --tracking-wide: 0.04em;
 
   /* Spacing scale */
-  --space-1:  0.25rem;    /* 4px */
-  --space-2:  0.5rem;     /* 8px */
-  --space-3:  0.75rem;    /* 12px */
-  --space-4:  1rem;       /* 16px */
-  --space-5:  1.25rem;    /* 20px */
-  --space-6:  1.5rem;     /* 24px */
-  --space-8:  2rem;       /* 32px */
-  --space-10: 2.5rem;     /* 40px */
-  --space-12: 3rem;       /* 48px */
-  --space-16: 4rem;       /* 64px */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-10: 2.5rem; /* 40px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
 
   /* Shape */
   --radius-none: 0px;
-  --radius-sm:   2px;
-  --radius-md:   4px;
-  --radius-lg:   6px;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
 
   /* Motion */
-  --duration-fast:   120ms;
+  --duration-fast: 120ms;
   --duration-normal: 200ms;
-  --duration-slow:   350ms;
-  --ease-out:        cubic-bezier(0.33, 1, 0.68, 1);
-  --ease-in-out:     cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-slow: 350ms;
+  --ease-out: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* Shadows — very subtle, no glow */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -106,10 +106,11 @@
   --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
-
 /* ─── Reset & Base ──────────────────────────────────────────────────────── */
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -139,20 +140,30 @@ body {
   flex-direction: column;
 }
 
-
 /* ─── Typography ────────────────────────────────────────────────────────── */
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   color: var(--text-primary);
 }
 
-h1 { font-size: var(--text-3xl); }
-h2 { font-size: var(--text-2xl); }
-h3 { font-size: var(--text-xl); }
-h4 { font-size: var(--text-lg); }
+h1 {
+  font-size: var(--text-3xl);
+}
+h2 {
+  font-size: var(--text-2xl);
+}
+h3 {
+  font-size: var(--text-xl);
+}
+h4 {
+  font-size: var(--text-lg);
+}
 
 p {
   color: var(--text-secondary);
@@ -169,11 +180,11 @@ a:hover {
   color: var(--accent-hover);
 }
 
-code, pre {
+code,
+pre {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
 }
-
 
 /* ─── Layout Utilities ──────────────────────────────────────────────────── */
 
@@ -188,7 +199,6 @@ code, pre {
   max-width: 960px;
 }
 
-
 /* ─── Card ──────────────────────────────────────────────────────────────── */
 
 .card {
@@ -202,7 +212,6 @@ code, pre {
   background: var(--bg-secondary);
   box-shadow: var(--shadow-sm);
 }
-
 
 /* ─── Buttons ───────────────────────────────────────────────────────────── */
 
@@ -273,7 +282,6 @@ code, pre {
   font-size: var(--text-base);
 }
 
-
 /* ─── Inputs ────────────────────────────────────────────────────────────── */
 
 .input-group {
@@ -322,7 +330,6 @@ code, pre {
   margin-top: var(--space-1);
 }
 
-
 /* ─── Loading Dots ──────────────────────────────────────────────────────── */
 
 .loading-dots {
@@ -341,12 +348,20 @@ code, pre {
   animation: pulse 1.4s ease-in-out infinite both;
 }
 
-.loading-dots span:nth-child(1) { animation-delay: 0s; }
-.loading-dots span:nth-child(2) { animation-delay: 0.16s; }
-.loading-dots span:nth-child(3) { animation-delay: 0.32s; }
+.loading-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.32s;
+}
 
 @keyframes pulse {
-  0%, 80%, 100% {
+  0%,
+  80%,
+  100% {
     transform: scale(0.4);
     opacity: 0.3;
   }
@@ -355,7 +370,6 @@ code, pre {
     opacity: 1;
   }
 }
-
 
 /* ─── Error Banner ──────────────────────────────────────────────────────── */
 
@@ -386,7 +400,6 @@ code, pre {
 .error-banner button:hover {
   opacity: 1;
 }
-
 
 /* ─── Stat Cards ────────────────────────────────────────────────────────── */
 
@@ -419,7 +432,6 @@ code, pre {
   margin-left: var(--space-1);
 }
 
-
 /* ─── Section Dividers ──────────────────────────────────────────────────── */
 
 .section-header {
@@ -446,7 +458,6 @@ code, pre {
   white-space: nowrap;
 }
 
-
 /* ─── Status Indicator Dots ─────────────────────────────────────────────── */
 
 .status-dot {
@@ -456,11 +467,18 @@ code, pre {
   border-radius: 50%;
 }
 
-.status-dot--driving  { background: var(--status-driving); }
-.status-dot--onduty   { background: var(--status-onduty); }
-.status-dot--sleeper  { background: var(--status-sleeper); }
-.status-dot--offduty  { background: var(--status-offduty); }
-
+.status-dot--driving {
+  background: var(--status-driving);
+}
+.status-dot--onduty {
+  background: var(--status-onduty);
+}
+.status-dot--sleeper {
+  background: var(--status-sleeper);
+}
+.status-dot--offduty {
+  background: var(--status-offduty);
+}
 
 /* ─── Scrollbar Styling ─────────────────────────────────────────────────── */
 
@@ -481,7 +499,6 @@ code, pre {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
-
 
 /* ─── Selection ─────────────────────────────────────────────────────────── */
 

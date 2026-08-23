@@ -56,17 +56,17 @@
 }
 
 /* Date input dark-mode fix */
-.trip-form input[type="date"] {
+.trip-form input[type='date'] {
   color-scheme: dark;
 }
 
 /* Number input spinner removal */
-.trip-form input[type="number"]::-webkit-outer-spin-button,
-.trip-form input[type="number"]::-webkit-inner-spin-button {
+.trip-form input[type='number']::-webkit-outer-spin-button,
+.trip-form input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-.trip-form input[type="number"] {
+.trip-form input[type='number'] {
   -moz-appearance: textfield;
 }
 
@@ -82,7 +82,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Disabled input styling */

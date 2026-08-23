@@ -101,7 +101,9 @@ describe('MapView', () => {
   });
 
   it('renders popup text for each waypoint', () => {
-    const singleWaypoint = [{ type: 'start', name: 'Chicago, IL', lat: 41.88, lon: -87.63, miles_from_start: 0 }];
+    const singleWaypoint = [
+      { type: 'start', name: 'Chicago, IL', lat: 41.88, lon: -87.63, miles_from_start: 0 },
+    ];
     render(<MapView geometry={MOCK_GEOMETRY} waypoints={singleWaypoint} />);
     expect(screen.getByText('Chicago, IL')).toBeInTheDocument();
   });

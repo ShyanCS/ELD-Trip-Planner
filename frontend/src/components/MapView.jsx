@@ -22,29 +22,28 @@ L.Icon.Default.mergeOptions({
 // ─── Marker Colors ──────────────────────────────────────────────────────────
 
 const MARKER_COLORS = {
-  start:   '#22C55E', // green
-  pickup:  '#3B82F6', // blue
+  start: '#22C55E', // green
+  pickup: '#3B82F6', // blue
   dropoff: '#EF4444', // red
-  fuel:    '#F59E0B', // amber
-  rest:    '#8B5CF6', // purple
+  fuel: '#F59E0B', // amber
+  rest: '#8B5CF6', // purple
 };
 
 const MARKER_LABELS = {
-  start:   'Start',
-  pickup:  'Pickup',
+  start: 'Start',
+  pickup: 'Pickup',
   dropoff: 'Dropoff',
-  fuel:    'Fuel Stop',
-  rest:    'Rest Stop',
+  fuel: 'Fuel Stop',
+  rest: 'Rest Stop',
 };
 
 const MARKER_ICONS = {
-  start:   '🟢',
-  pickup:  '📦',
+  start: '🟢',
+  pickup: '📦',
   dropoff: '🏁',
-  fuel:    '⛽',
-  rest:    '🛌',
+  fuel: '⛽',
+  rest: '🛌',
 };
-
 
 // ─── Custom SVG Marker Icon ─────────────────────────────────────────────────
 
@@ -68,7 +67,6 @@ function createMarkerIcon(type) {
   });
 }
 
-
 // ─── Auto-fit bounds helper ─────────────────────────────────────────────────
 
 function FitBounds({ positions }) {
@@ -84,14 +82,11 @@ function FitBounds({ positions }) {
   return null;
 }
 
-
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function MapView({ geometry, waypoints }) {
   // Convert GeoJSON [lon, lat] to Leaflet [lat, lon]
-  const routePositions = (geometry?.coordinates || []).map(
-    ([lon, lat]) => [lat, lon]
-  );
+  const routePositions = (geometry?.coordinates || []).map(([lon, lat]) => [lat, lon]);
 
   if (routePositions.length === 0) return null;
 
@@ -153,10 +148,7 @@ export default function MapView({ geometry, waypoints }) {
       <div className="map-legend">
         {Object.entries(MARKER_LABELS).map(([type, label]) => (
           <div key={type} className="map-legend__item">
-            <span
-              className="map-legend__dot"
-              style={{ backgroundColor: MARKER_COLORS[type] }}
-            />
+            <span className="map-legend__dot" style={{ backgroundColor: MARKER_COLORS[type] }} />
             <span>{label}</span>
           </div>
         ))}

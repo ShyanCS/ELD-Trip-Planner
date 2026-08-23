@@ -64,13 +64,66 @@ function App() {
         <div className="container app-header__inner">
           <div className="app-header__brand">
             <div className="app-header__logo">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="2" y="6" width="24" height="16" rx="1" stroke="var(--accent-primary)" strokeWidth="1.5" fill="none"/>
-                <circle cx="9" cy="22" r="2.5" stroke="var(--accent-primary)" strokeWidth="1.5" fill="none"/>
-                <circle cx="19" cy="22" r="2.5" stroke="var(--accent-primary)" strokeWidth="1.5" fill="none"/>
-                <line x1="6" y1="10" x2="22" y2="10" stroke="var(--accent-primary)" strokeWidth="1" opacity="0.5"/>
-                <line x1="6" y1="14" x2="22" y2="14" stroke="var(--accent-primary)" strokeWidth="1" opacity="0.5"/>
-                <line x1="6" y1="18" x2="22" y2="18" stroke="var(--accent-primary)" strokeWidth="1" opacity="0.5"/>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 28 28"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  x="2"
+                  y="6"
+                  width="24"
+                  height="16"
+                  rx="1"
+                  stroke="var(--accent-primary)"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+                <circle
+                  cx="9"
+                  cy="22"
+                  r="2.5"
+                  stroke="var(--accent-primary)"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+                <circle
+                  cx="19"
+                  cy="22"
+                  r="2.5"
+                  stroke="var(--accent-primary)"
+                  strokeWidth="1.5"
+                  fill="none"
+                />
+                <line
+                  x1="6"
+                  y1="10"
+                  x2="22"
+                  y2="10"
+                  stroke="var(--accent-primary)"
+                  strokeWidth="1"
+                  opacity="0.5"
+                />
+                <line
+                  x1="6"
+                  y1="14"
+                  x2="22"
+                  y2="14"
+                  stroke="var(--accent-primary)"
+                  strokeWidth="1"
+                  opacity="0.5"
+                />
+                <line
+                  x1="6"
+                  y1="18"
+                  x2="22"
+                  y2="18"
+                  stroke="var(--accent-primary)"
+                  strokeWidth="1"
+                  opacity="0.5"
+                />
               </svg>
             </div>
             <div className="app-header__title-block">
@@ -89,7 +142,6 @@ function App() {
       {/* ── Main Content ── */}
       <main className="app-main">
         <div className="container">
-
           {/* Error Banner */}
           <ErrorBanner message={error} onDismiss={() => setError('')} />
 
@@ -100,8 +152,8 @@ function App() {
                 <h2>Plan Your Next Trip</h2>
                 <p>
                   Enter your route details below. The HOS compliance engine will generate
-                  FMCSA-compliant daily log sheets, calculate mandatory breaks and fuel stops,
-                  and plot your route on the map.
+                  FMCSA-compliant daily log sheets, calculate mandatory breaks and fuel stops, and
+                  plot your route on the map.
                 </p>
               </div>
 
@@ -135,7 +187,10 @@ function App() {
 
               {/* Daily Log Sheets */}
               <div className="results-logs">
-                <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div
+                  className="section-header"
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
                   <h3>Daily Log Sheets</h3>
                   <ExportPdfButton />
                 </div>

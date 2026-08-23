@@ -3,7 +3,7 @@ import './TripTimeline.css';
 /**
  * TripTimeline Component
  * Renders a vertical timeline summarizing the daily logs and remarks.
- * 
+ *
  * Props:
  *   dailyLogs: Array of daily log objects (from /api/trip/plan/)
  */
@@ -42,7 +42,7 @@ export default function TripTimeline({ dailyLogs }) {
               const isPickup = description.toLowerCase().includes('pickup');
               const isDropoff = description.toLowerCase().includes('dropoff');
               const _isDriving = description.toLowerCase().includes('driving');
-              
+
               let eventClass = 'timeline-event__dot--default';
               if (isRest) eventClass = 'timeline-event__dot--rest';
               if (isPickup) eventClass = 'timeline-event__dot--pickup';

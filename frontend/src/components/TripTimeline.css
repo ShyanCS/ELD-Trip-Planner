@@ -100,15 +100,15 @@
 }
 
 .timeline-event__dot--rest {
-  background-color: #8B5CF6; /* Purple */
+  background-color: #8b5cf6; /* Purple */
 }
 
 .timeline-event__dot--pickup {
-  background-color: #3B82F6; /* Blue */
+  background-color: #3b82f6; /* Blue */
 }
 
 .timeline-event__dot--dropoff {
-  background-color: #EF4444; /* Red */
+  background-color: #ef4444; /* Red */
 }
 
 .timeline-event__content {

@@ -86,7 +86,6 @@
   color: #8a7060;
 }
 
-
 /* Legend */
 .map-legend {
   display: flex;
@@ -111,7 +110,6 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
-
 
 /* Leaflet control overrides for dark theme */
 .leaflet-control-zoom a {

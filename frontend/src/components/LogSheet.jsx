@@ -16,14 +16,14 @@ import './LogSheet.css';
 
 const CANVAS_W = 1100;
 const CANVAS_H = 520;
-const DPR = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1;
+const DPR = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
 
 // Margins
-const LEFT_MARGIN = 90;       // Row labels
-const RIGHT_MARGIN = 90;      // Totals column
-const TOP_MARGIN = 70;        // Header area
-const HOUR_LABEL_H = 28;      // Hour label row height
-const ROW_H = 52;             // Each status row height
+const LEFT_MARGIN = 90; // Row labels
+const RIGHT_MARGIN = 90; // Totals column
+const TOP_MARGIN = 70; // Header area
+const HOUR_LABEL_H = 28; // Hour label row height
+const ROW_H = 52; // Each status row height
 const GRID_TOP = TOP_MARGIN + HOUR_LABEL_H;
 const GRID_W = CANVAS_W - LEFT_MARGIN - RIGHT_MARGIN;
 const GRID_H = ROW_H * 4;
@@ -36,34 +36,55 @@ const STATUS_SHORT = ['OFF', 'SB', 'D', 'ON'];
 
 // Colors
 const COLORS = {
-  bg:           '#1c110b',
-  gridLine:     '#3d2c22',
-  gridLineMajor:'#4a362a',
-  hourLabel:    '#8a7060',
-  rowLabel:     '#c4a48e',
-  text:         '#f5e6dc',
-  textMuted:    '#8a7060',
-  textSecondary:'#c4a48e',
-  accent:       '#ffb690',
-  driving:      '#F97316',
+  bg: '#1c110b',
+  gridLine: '#3d2c22',
+  gridLineMajor: '#4a362a',
+  hourLabel: '#8a7060',
+  rowLabel: '#c4a48e',
+  text: '#f5e6dc',
+  textMuted: '#8a7060',
+  textSecondary: '#c4a48e',
+  accent: '#ffb690',
+  driving: '#F97316',
   on_duty_not_driving: '#EAB308',
-  sleeper_berth:'#8B5CF6',
-  off_duty:     '#6B7280',
-  statusBar:    {
-    driving:             'rgba(249, 115, 22, 0.85)',
+  sleeper_berth: '#8B5CF6',
+  off_duty: '#6B7280',
+  statusBar: {
+    driving: 'rgba(249, 115, 22, 0.85)',
     on_duty_not_driving: 'rgba(234, 179, 8, 0.85)',
-    sleeper_berth:       'rgba(139, 92, 246, 0.85)',
-    off_duty:            'rgba(107, 114, 128, 0.50)',
+    sleeper_berth: 'rgba(139, 92, 246, 0.85)',
+    off_duty: 'rgba(107, 114, 128, 0.50)',
   },
-  transition:   '#ffb690',
+  transition: '#ffb690',
 };
 
 // Hour labels: M 1 2 3 ... 11 N 1 2 3 ... 11
 const HOUR_LABELS = [
-  'M','1','2','3','4','5','6','7','8','9','10','11',
-  'N','1','2','3','4','5','6','7','8','9','10','11',
+  'M',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  '11',
+  'N',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '10',
+  '11',
 ];
-
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -136,7 +157,6 @@ function buildSegments(events) {
   return segments;
 }
 
-
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export default function LogSheet({ log }) {
@@ -171,7 +191,6 @@ export default function LogSheet({ log }) {
     drawTotalsColumn(ctx, log.totals);
     drawTotalsBar(ctx, log.totals);
     drawRemarks(ctx, log.remarks);
-
   }, [log]);
 
   if (!log) return null;
@@ -182,7 +201,6 @@ export default function LogSheet({ log }) {
     </div>
   );
 }
-
 
 // ─── Drawing Functions ──────────────────────────────────────────────────────
 
@@ -223,7 +241,6 @@ function drawHeader(ctx, data) {
   ctx.textAlign = 'center';
   ctx.fillText('TOTAL', CANVAS_W - RIGHT_MARGIN / 2, TOP_MARGIN - 4);
 }
-
 
 function drawGrid(ctx) {
   ctx.strokeStyle = COLORS.gridLine;
@@ -296,18 +313,16 @@ function drawGrid(ctx) {
   ctx.stroke();
 }
 
-
 function drawHourLabels(ctx) {
   ctx.font = `500 11px 'JetBrains Mono', monospace`;
   ctx.fillStyle = COLORS.hourLabel;
   ctx.textAlign = 'center';
 
   for (let h = 0; h < 24; h++) {
-    const x = LEFT_MARGIN + (h / 24) * GRID_W + (GRID_W / 48);
+    const x = LEFT_MARGIN + (h / 24) * GRID_W + GRID_W / 48;
     ctx.fillText(HOUR_LABELS[h], x, TOP_MARGIN + HOUR_LABEL_H - 6);
   }
 }
-
 
 function drawRowLabels(ctx) {
   ctx.textAlign = 'right';
@@ -327,7 +342,6 @@ function drawRowLabels(ctx) {
   }
 }
 
-
 function drawStatusBars(ctx, segments) {
   const barH = 4;
 
@@ -341,7 +355,6 @@ function drawStatusBars(ctx, segments) {
     ctx.fillRect(x1, barY, x2 - x1, barH);
   });
 }
-
 
 function drawTransitionLines(ctx, segments) {
   ctx.strokeStyle = COLORS.transition;
@@ -365,7 +378,6 @@ function drawTransitionLines(ctx, segments) {
   }
 }
 
-
 function drawTotalsColumn(ctx, totals) {
   const colX = CANVAS_W - RIGHT_MARGIN + 8;
 
@@ -380,7 +392,6 @@ function drawTotalsColumn(ctx, totals) {
     ctx.fillText(value.toFixed(1), colX + 4, y + 5);
   }
 }
-
 
 function drawTotalsBar(ctx, totals) {
   // Stacked horizontal bar showing time distribution
@@ -404,9 +415,12 @@ function drawTotalsBar(ctx, totals) {
   ctx.fillStyle = COLORS.textMuted;
   ctx.textAlign = 'right';
   const totalSum = Object.values(totals).reduce((a, b) => a + b, 0);
-  ctx.fillText(`${totalSum.toFixed(1)}h`, CANVAS_W - RIGHT_MARGIN + RIGHT_MARGIN / 2 + 20, barY + barH);
+  ctx.fillText(
+    `${totalSum.toFixed(1)}h`,
+    CANVAS_W - RIGHT_MARGIN + RIGHT_MARGIN / 2 + 20,
+    barY + barH
+  );
 }
-
 
 function drawRemarks(ctx, remarks) {
   if (!remarks || remarks.length === 0) return;

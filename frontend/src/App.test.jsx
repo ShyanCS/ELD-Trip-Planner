@@ -111,7 +111,7 @@ describe('App', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/current_location: This field may not be blank\./i),
+        screen.getByText(/current_location: This field may not be blank\./i)
       ).toBeInTheDocument();
     });
   });

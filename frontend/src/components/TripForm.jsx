@@ -113,8 +113,7 @@ export default function TripForm({ onSubmit, isLoading }) {
     onSubmit(payload);
   };
 
-  const fieldClass = (name) =>
-    touched[name] && errors[name] ? 'input--error' : '';
+  const fieldClass = (name) => (touched[name] && errors[name] ? 'input--error' : '');
 
   return (
     <form className="trip-form" onSubmit={handleSubmit} id="trip-plan-form">
@@ -204,7 +203,9 @@ export default function TripForm({ onSubmit, isLoading }) {
           </div>
 
           <div className="input-group" id="field-start-date">
-            <label htmlFor="start_date">Start Date <span className="input-optional">(optional)</span></label>
+            <label htmlFor="start_date">
+              Start Date <span className="input-optional">(optional)</span>
+            </label>
             <input
               type="date"
               id="start_date"

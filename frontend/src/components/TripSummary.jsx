@@ -56,8 +56,12 @@ export default function TripSummary({ route, dailyLogs, stopEvents, onReset }) {
             <span className="stat-card__unit">total</span>
           </div>
           <div className="stat-card__detail">
-            {fuelStops > 0 && <span className="stat-card__tag stat-card__tag--fuel">{fuelStops} fuel</span>}
-            {restStops > 0 && <span className="stat-card__tag stat-card__tag--rest">{restStops} rest</span>}
+            {fuelStops > 0 && (
+              <span className="stat-card__tag stat-card__tag--fuel">{fuelStops} fuel</span>
+            )}
+            {restStops > 0 && (
+              <span className="stat-card__tag stat-card__tag--rest">{restStops} rest</span>
+            )}
           </div>
         </div>
       </div>
