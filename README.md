@@ -449,7 +449,14 @@ The suite is guaranteed to make **zero outbound network calls**. `config/test_ru
 `socket.connect` and `getaddrinfo` calls for the duration of the run — any unmocked HTTP
 attempt raises `NetworkBlocked` and fails loudly. All OpenRouteService calls are mocked with
 the [responses](https://github.com/getsentry/responses) library, so no `ORS_API_KEY` is needed
-to run tests (even with your network cable unplugged).
+to run tests (even with your network cable unplugged). The full suite passes with
+`ORS_API_KEY=''` — this is exactly how CI executes it.
+
+### Running the App Without an ORS Account
+
+For local manual testing without an API key, set `USE_MOCK_ORS=True` in `backend/.env`:
+geocode/route calls return canned fixtures (Chicago / Kansas City / Los Angeles, plus a
+deterministic fallback) and the whole flow works end-to-end offline.
 
 ### Run Frontend Tests (with coverage)
 

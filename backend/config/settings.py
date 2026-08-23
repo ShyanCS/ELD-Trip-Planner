@@ -118,6 +118,10 @@ else:
 # OpenRouteService API Key
 ORS_API_KEY = config('ORS_API_KEY', default='')
 
+# Mock ORS mode: serve canned geocode/route fixtures so the app runs
+# end-to-end locally with no OpenRouteService account or API key.
+USE_MOCK_ORS = config('USE_MOCK_ORS', default=False, cast=bool)
+
 from .logging import LOGGING  # noqa: F401, E402
 
 SENTRY_DSN = config('SENTRY_DSN', default='')

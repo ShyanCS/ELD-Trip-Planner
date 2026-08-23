@@ -11,6 +11,7 @@ import logging
 import math
 
 import requests
+from decouple import config
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,20 @@ REVERSE_GEOCODE_URL = f'{ORS_BASE_URL}/geocode/reverse'
 
 # Simple in-request cache to avoid redundant geocode calls
 _geocode_cache = {}
+
+# Mock-mode fixture cities (USE_MOCK_ORS=True) — lat/lon/name
+_MOCK_CITIES = {
+    'chicago': (41.8781, -87.6298, 'Chicago, IL, USA'),
+    'kansas city': (39.0997, -94.5786, 'Kansas City, MO, USA'),
+    'los angeles': (34.0522, -118.2437, 'Los Angeles, CA, USA'),
+    'st louis': (38.6270, -90.1994, 'St Louis, MO, USA'),
+    'denver': (39.7392, -104.9903, 'Denver, CO, USA'),
+}
+
+# Read via decouple (live env) rather than Django settings so test doubles
+# patching trip.geocoder.settings can never accidentally enable mock mode.
+def _use_mock_ors():
+    return config('USE_MOCK_ORS', default=False, cast=bool)
 
 
 def _get_api_key():
@@ -40,6 +55,8 @@ def geocode(place_name):
     """
     Convert a place name (city, state or address) to coordinates.
 
+    In mock mode (USE_MOCK_ORS=True) returns canned fixtures — no network.
+
     Args:
         place_name: String like "Chicago, IL" or "123 Main St, Springfield, IL"
 
@@ -54,6 +71,11 @@ def geocode(place_name):
     cache_key = place_name.strip().lower()
     if cache_key in _geocode_cache:
         return _geocode_cache[cache_key]
+
+    if _use_mock_ors():
+        result = _mock_geocode(place_name)
+        _geocode_cache[cache_key] = result
+        return result
 
     api_key = _get_api_key()
 
@@ -120,6 +142,9 @@ def get_route(coords_list):
         ValueError: If route cannot be calculated
         requests.RequestException: On API errors
     """
+    if _use_mock_ors():
+        return _mock_route(coords_list)
+
     api_key = _get_api_key()
 
     response = requests.post(
@@ -242,6 +267,9 @@ def _reverse_geocode(lat, lon):
 
     Returns a fallback string if the API call fails.
     """
+    if _use_mock_ors():
+        return f"({lat:.2f}, {lon:.2f})"
+
     try:
         api_key = _get_api_key()
         response = requests.get(
@@ -276,3 +304,59 @@ def clear_cache():
     """Clear the geocode cache. Useful between test runs."""
     global _geocode_cache
     _geocode_cache = {}
+
+
+# ─── Mock Mode (USE_MOCK_ORS=True) ───────────────────────────────────────────
+
+def _mock_geocode(place_name):
+    """
+    Canned geocode fixture for local development without an ORS account.
+
+    Known cities return their real coordinates; anything else resolves to a
+    stable generic point so every demo trip completes end-to-end.
+    """
+    key = place_name.strip().lower()
+    for city, (lat, lon, label) in _MOCK_CITIES.items():
+        if city in key:
+            return {'lat': lat, 'lon': lon, 'name': label}
+
+    # Geographic center of the contiguous US — deterministic fallback
+    logger.info('Mock geocode fallback used', extra={'place_name': place_name})
+    return {'lat': 39.8283, 'lon': -98.5795, 'name': f'{place_name} (mock)'}
+
+
+def _mock_route(coords_list):
+    """
+    Canned route fixture: great-circle distance with a road factor and a
+    subdivided LineString, so map rendering and stop placement behave
+    exactly like real ORS output.
+    """
+    if len(coords_list) < 2:
+        raise ValueError("Could not calculate route between the given locations.")
+
+    coordinates = []
+    total_meters = 0.0
+
+    for i in range(len(coords_list) - 1):
+        lon1, lat1 = coords_list[i]
+        lon2, lat2 = coords_list[i + 1]
+
+        leg_miles = _haversine_meters(lat1, lon1, lat2, lon2) / 1609.344
+        road_miles = leg_miles * 1.15  # roads are longer than great circles
+        total_meters += road_miles * 1609.344
+
+        # Subdivide each leg so intermediate-point placement works
+        steps = max(2, int(road_miles / 50))
+        for s in range(steps):
+            f = s / steps
+            coordinates.append([lon1 + f * (lon2 - lon1), lat1 + f * (lat2 - lat1)])
+    coordinates.append(list(coords_list[-1]))
+
+    return {
+        'distance_miles': round(total_meters / 1609.344, 1),
+        'duration_hours': round((total_meters / 1609.344) / 55.0, 2),  # 55 mph average
+        'geometry': {
+            'type': 'LineString',
+            'coordinates': coordinates,
+        },
+    }

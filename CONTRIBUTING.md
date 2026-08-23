@@ -75,7 +75,15 @@ cd backend
 python manage.py test --verbosity=2
 ```
 
-All tests live under `backend/trip/tests/`. The test suite covers the HOS calculator, geocoder, serializers, and views.
+All tests live under `backend/trip/tests/`. The test suite covers the HOS calculator, geocoder, serializers, views, mock mode, and the offline guard.
+
+#### Testing without an OpenRouteService account
+
+The backend suite is **fully self-contained** — it passes 100% with `ORS_API_KEY=''` (this is exactly how CI runs it) and cannot reach the network even by accident:
+
+- **Test-time network block** — `config/test_runner.py` (`OfflineTestRunner`) blocks all non-loopback sockets and DNS for the duration of the run. Any unmocked outbound call raises `NetworkBlocked`, so a forgotten mock fails loudly. All ORS calls are mocked with the [responses](https://github.com/getsentry/responses) library.
+- **Mock mode for manual local testing** — set `USE_MOCK_ORS=True` in `backend/.env` to click through the full app with no API key: geocode/route calls return canned Chicago / Kansas City / Los Angeles fixtures (unknown places resolve deterministically). See `backend/.env.example`.
+- `trip/tests/test_mock_mode.py` pins both behaviors, including an end-to-end plan request succeeding with no key and no network.
 
 ### Frontend Tests
 
@@ -93,9 +101,10 @@ Frontend tests use [Vitest](https://vitest.dev/) and [@testing-library/react](ht
 cd backend
 ruff check .
 
-# Frontend
+# Frontend (ESLint + Prettier)
 cd frontend
 npm run lint
+npm run format:check
 ```
 
 ---
