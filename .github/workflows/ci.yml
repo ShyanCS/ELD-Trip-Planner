@@ -159,6 +159,9 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Check Prettier formatting
+        run: npm run format:check
+
   # ─── Security: Dependency Audit ──────────────────────────────────────────────
   security-audit:
     name: Security Audit (pip-audit)
