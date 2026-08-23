@@ -11,7 +11,7 @@
     "format:check": "prettier --check .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage --coverage.thresholds.lines=80 --coverage.thresholds.statements=80 --coverage.thresholds.branches=65 --coverage.thresholds.functions=75"
   },
   "dependencies": {
     "axios": "^1.19.0",
