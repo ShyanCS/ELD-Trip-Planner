@@ -103,7 +103,7 @@ class HealthView(APIView):
             {
                 "status": "ok",
                 "service": "eld-trip-planner",
-                "version": "1.0.0",
+                "version": "1.1.0",
             },
             status=status.HTTP_200_OK,
         )
@@ -119,7 +119,7 @@ class MetricsView(APIView):
     Response:
         {
             "status": "ok",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "uptime_seconds": 3600.5,
             "requests_total": 42,
             "trips_planned": 38,
@@ -133,7 +133,7 @@ class MetricsView(APIView):
         return Response(
             {
                 "status": "ok",
-                "version": "1.0.0",
+                "version": "1.1.0",
                 "uptime_seconds": round(time.time() - _APP_START_TIME, 2),
                 **snapshot,
             },
@@ -151,7 +151,7 @@ class VersionView(APIView):
     Response:
         {
             "app": "eld-trip-planner",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "django_version": "5.2.17",
             "python_version": "3.11.x"
         }
@@ -165,7 +165,7 @@ class VersionView(APIView):
         return Response(
             {
                 "app": "eld-trip-planner",
-                "version": "1.0.0",
+                "version": "1.1.0",
                 "django_version": django.get_version(),
                 "python_version": sys.version.split()[0],
             },
