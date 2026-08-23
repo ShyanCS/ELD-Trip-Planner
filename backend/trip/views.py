@@ -8,10 +8,18 @@ import logging
 import threading
 import time
 
+import requests
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .exceptions import (
+    GeocodeError,
+    HOSCalculationError,
+    RouteError,
+    TripPlanError,
+    UpstreamServiceError,
+)
 from .geocoder import clear_cache, geocode, get_intermediate_point, get_route
 from .hos_calculator import calculate_trip
 from .serializers import TripPlanSerializer
@@ -32,6 +40,54 @@ def _increment(key: str) -> None:
     """Thread-safe counter increment."""
     with _metrics_lock:
         _metrics[key] += 1
+
+
+# ─── Pipeline stages: map low-level failures to typed errors ─────────────────
+
+def _geocode_stage(place_name):
+    """Geocode a place name, raising GeocodeError/UpstreamServiceError on failure."""
+    try:
+        return geocode(place_name)
+    except requests.RequestException as exc:
+        logger.warning(
+            "Geocode upstream request failed",
+            extra={"place_name": place_name, "error": str(exc)},
+        )
+        raise UpstreamServiceError.from_request_exception(exc) from exc
+    except TripPlanError:
+        raise
+    except ValueError as exc:
+        raise GeocodeError(str(exc), details={"location": place_name}) from exc
+
+
+def _route_stage(coords):
+    """Compute a route, raising RouteError/UpstreamServiceError on failure."""
+    try:
+        return get_route(coords)
+    except requests.RequestException as exc:
+        logger.warning(
+            "Route upstream request failed",
+            extra={"error": str(exc)},
+        )
+        raise UpstreamServiceError.from_request_exception(exc) from exc
+    except TripPlanError:
+        raise
+    except ValueError as exc:
+        raise RouteError(str(exc)) from exc
+
+
+def _hos_stage(segments, current_cycle_used, start_date):
+    """Run the HOS engine, raising HOSCalculationError on failure."""
+    try:
+        return calculate_trip(
+            segments=segments,
+            current_cycle_used=current_cycle_used,
+            start_date=start_date,
+        )
+    except TripPlanError:
+        raise
+    except ValueError as exc:
+        raise HOSCalculationError(str(exc)) from exc
 
 
 class HealthView(APIView):
@@ -143,6 +199,17 @@ class TripPlanView(APIView):
             "daily_logs": [ ... ],
             "stop_events": [ ... ]
         }
+
+    Error responses use a typed schema:
+        {
+            "error": {
+                "code": "GEOCODE_FAILED" | "ROUTE_FAILED" | "HOS_FAILED"
+                        | "UPSTREAM_UNAVAILABLE" | "VALIDATION_FAILED"
+                        | "INTERNAL_ERROR",
+                "message": "Human-readable description",
+                "details": { ... }   (optional)
+            }
+        }
     """
 
     def post(self, request):
@@ -151,7 +218,13 @@ class TripPlanView(APIView):
         serializer = TripPlanSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(
-                {'error': 'Validation failed', 'details': serializer.errors},
+                {
+                    'error': {
+                        'code': 'VALIDATION_FAILED',
+                        'message': 'Validation failed',
+                        'details': serializer.errors,
+                    },
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -162,19 +235,19 @@ class TripPlanView(APIView):
             clear_cache()
 
             # ── Step 2: Geocode locations ──
-            current_geo = geocode(data['current_location'])
-            pickup_geo = geocode(data['pickup_location'])
-            dropoff_geo = geocode(data['dropoff_location'])
+            current_geo = _geocode_stage(data['current_location'])
+            pickup_geo = _geocode_stage(data['pickup_location'])
+            dropoff_geo = _geocode_stage(data['dropoff_location'])
 
             # ── Step 3: Get routes ──
             # Route 1: Current → Pickup
-            route_to_pickup = get_route([
+            route_to_pickup = _route_stage([
                 [current_geo['lon'], current_geo['lat']],
                 [pickup_geo['lon'], pickup_geo['lat']],
             ])
 
             # Route 2: Pickup → Dropoff
-            route_to_dropoff = get_route([
+            route_to_dropoff = _route_stage([
                 [pickup_geo['lon'], pickup_geo['lat']],
                 [dropoff_geo['lon'], dropoff_geo['lat']],
             ])
@@ -205,7 +278,7 @@ class TripPlanView(APIView):
             start_date = data.get('start_date')
             start_date_str = start_date.strftime('%Y-%m-%d') if start_date else None
 
-            hos_result = calculate_trip(
+            hos_result = _hos_stage(
                 segments=segments,
                 current_cycle_used=data['current_cycle_used'],
                 start_date=start_date_str,
@@ -248,18 +321,23 @@ class TripPlanView(APIView):
             _increment('trips_planned')
             return Response(response_data, status=status.HTTP_200_OK)
 
-        except ValueError as e:
+        except TripPlanError as e:
             _increment('trips_failed')
-            logger.warning(f"Trip planning failed (ValueError): {e}")
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST,
+            logger.warning(
+                f"Trip planning failed: {e.message}",
+                extra={"error_code": e.code, "details": e.details},
             )
+            return Response({'error': e.to_dict()}, status=e.http_status)
         except Exception as e:
             _increment('trips_failed')
             logger.error(f"Trip planning failed (unexpected): {e}", exc_info=True)
             return Response(
-                {'error': 'An unexpected error occurred. Please try again.'},
+                {
+                    'error': {
+                        'code': 'INTERNAL_ERROR',
+                        'message': 'An unexpected error occurred. Please try again.',
+                    },
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

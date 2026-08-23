@@ -8,6 +8,7 @@ Tests verify the full pipeline: validation → geocoding → routing → HOS →
 import re
 from unittest.mock import MagicMock, patch
 
+import requests
 import responses
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -157,10 +158,11 @@ class TestTripPlanViewValidation(TestCase):
         self.url = '/api/trip/plan/'
 
     def test_empty_body_returns_400(self, mock_settings):
-        """POST with empty body returns 400 with validation errors."""
+        """POST with empty body returns 400 with typed validation error."""
         response = self.client.post(self.url, {}, format='json')
         self.assertEqual(response.status_code, 400)
-        self.assertIn('details', response.data)
+        self.assertEqual(response.data['error']['code'], 'VALIDATION_FAILED')
+        self.assertIn('details', response.data['error'])
 
     def test_missing_field_returns_400(self, mock_settings):
         """POST with missing required field returns 400."""
@@ -403,3 +405,94 @@ class TestTripPlanViewErrors(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertIn('error', response.data)
+
+
+@patch('trip.geocoder.settings')
+class TestTripPlanViewTypedErrorSchema(TestCase):
+    """Tests asserting the structured {code, message, details} error schema."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.url = '/api/trip/plan/'
+
+    def _post_trip(self, current_location='Chicago, IL'):
+        return self.client.post(self.url, {
+            'current_location': current_location,
+            'pickup_location': 'Kansas City, MO',
+            'dropoff_location': 'Los Angeles, CA',
+            'current_cycle_used': 20,
+        }, format='json')
+
+    @responses.activate
+    def test_geocode_failure_returns_typed_error_schema(self, mock_settings):
+        """Geocode failure returns {error: {code, message, details}} with GEOCODE_FAILED."""
+        mock_settings.ORS_API_KEY = 'test-key'
+        _setup_mock_geocode_responses()
+
+        response = self._post_trip(current_location='Nonexistent Place XYZ')
+
+        self.assertEqual(response.status_code, 400)
+        error = response.data['error']
+        self.assertEqual(error['code'], 'GEOCODE_FAILED')
+        self.assertIn('Nonexistent Place XYZ', error['message'])
+        self.assertEqual(error['details'], {'location': 'Nonexistent Place XYZ'})
+
+    def test_missing_api_key_returns_typed_error_schema(self, mock_settings):
+        """Missing API key maps to GEOCODE_FAILED with the config hint in message."""
+        mock_settings.ORS_API_KEY = ''
+
+        response = self._post_trip()
+
+        self.assertEqual(response.status_code, 400)
+        error = response.data['error']
+        self.assertEqual(error['code'], 'GEOCODE_FAILED')
+        self.assertIn('ORS_API_KEY', error['message'])
+
+    @responses.activate
+    def test_route_failure_returns_typed_error_schema(self, mock_settings):
+        """Empty route result returns {code: ROUTE_FAILED, message, details=None}."""
+        mock_settings.ORS_API_KEY = 'test-key'
+        _setup_mock_geocode_responses()
+
+        responses.add(
+            responses.POST,
+            'https://api.openrouteservice.org/v2/directions/driving-hgv/geojson',
+            json={'features': []},
+            status=200,
+        )
+
+        response = self._post_trip()
+
+        self.assertEqual(response.status_code, 400)
+        error = response.data['error']
+        self.assertEqual(error['code'], 'ROUTE_FAILED')
+        self.assertIn('route', error['message'].lower())
+        self.assertNotIn('details', error)
+
+    @responses.activate
+    def test_upstream_outage_returns_503_schema(self, mock_settings):
+        """Network failure to ORS returns 503 with UPSTREAM_UNAVAILABLE code."""
+        mock_settings.ORS_API_KEY = 'test-key'
+
+        responses.add(
+            responses.GET,
+            re.compile(r'^https://api\.openrouteservice\.org/geocode/search.*$'),
+            body=requests.exceptions.ConnectionError('DNS resolution failed'),
+        )
+
+        response = self._post_trip()
+
+        self.assertEqual(response.status_code, 503)
+        error = response.data['error']
+        self.assertEqual(error['code'], 'UPSTREAM_UNAVAILABLE')
+        self.assertIn('unavailable', error['message'].lower())
+
+    def test_validation_failure_returns_typed_error_schema(self, mock_settings):
+        """Serializer validation failure returns VALIDATION_FAILED with field details."""
+        response = self.client.post(self.url, {}, format='json')
+
+        self.assertEqual(response.status_code, 400)
+        error = response.data['error']
+        self.assertEqual(error['code'], 'VALIDATION_FAILED')
+        self.assertEqual(error['message'], 'Validation failed')
+        self.assertIn('current_location', error['details'])
