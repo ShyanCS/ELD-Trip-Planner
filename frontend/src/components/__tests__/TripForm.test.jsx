@@ -61,6 +61,28 @@ describe('TripForm', () => {
     expect(screen.getByText(/cannot be negative/i)).toBeInTheDocument();
   });
 
+  it('rejects location input with script-injection characters', () => {
+    renderForm();
+
+    const locationInput = screen.getByLabelText(/current location/i);
+    fireEvent.change(locationInput, { target: { value: '<script>alert(1)</script>' } });
+    fireEvent.blur(locationInput);
+
+    expect(screen.getByText(/contains invalid characters/i)).toBeInTheDocument();
+  });
+
+  it('accepts location input with common address punctuation', () => {
+    renderForm();
+
+    const locationInput = screen.getByLabelText(/current location/i);
+    fireEvent.change(locationInput, {
+      target: { value: "123 O'Neil St. #4, Suite 2-B (Rear), St. Louis & Co." },
+    });
+    fireEvent.blur(locationInput);
+
+    expect(screen.queryByText(/contains invalid characters/i)).not.toBeInTheDocument();
+  });
+
   it('calls onSubmit with correct payload when all fields are valid', () => {
     const { onSubmit } = renderForm();
 

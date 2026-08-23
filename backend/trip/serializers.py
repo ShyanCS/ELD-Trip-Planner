@@ -2,13 +2,27 @@
 Trip serializers — input validation for trip planning requests.
 """
 
+import re
+
 from django.core.validators import RegexValidator
 from rest_framework import serializers
+
+# ─── Input Validation Patterns ───────────────────────────────────────────────
+# Location fields accept letters, numbers, whitespace, and common address
+# punctuation. Everything else (control characters, script tags, SQL/HTML
+# metacharacters) is rejected at the API boundary before any geocoding occurs.
+
+LOCATION_PATTERN = r"^[\w\s,.()\'\"\-#&/]+$"
+LOCATION_REGEX = re.compile(LOCATION_PATTERN)
+
+VALIDATION_PATTERNS = {
+    "location": LOCATION_REGEX,
+}
 
 # Validates that a location string contains only printable, address-safe characters.
 # Rejects control characters, SQL injection attempts, and script tags.
 _location_validator = RegexValidator(
-    regex=r"^[\w\s,.()\'\"\-#&/]+$",
+    regex=LOCATION_PATTERN,
     message=(
         "Location must contain only letters, numbers, spaces, and common "
         "address characters (, . ( ) ' \" - # & /)."

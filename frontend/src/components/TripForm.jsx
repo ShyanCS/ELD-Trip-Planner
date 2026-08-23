@@ -9,6 +9,11 @@ import './TripForm.css';
  *   onSubmit(formData)  — called with validated form data
  *   isLoading           — disables form when true
  */
+
+// Mirrors the backend LOCATION_PATTERN (backend/trip/serializers.py):
+// letters, numbers, whitespace, and common address punctuation only.
+const LOCATION_PATTERN = /^[\w\s,.()'"#&/-]+$/;
+
 export default function TripForm({ onSubmit, isLoading }) {
   const [formData, setFormData] = useState({
     current_location: '',
@@ -43,12 +48,15 @@ export default function TripForm({ onSubmit, isLoading }) {
     switch (name) {
       case 'current_location':
         if (!value.trim()) error = 'Current location is required.';
+        else if (!LOCATION_PATTERN.test(value)) error = 'Contains invalid characters.';
         break;
       case 'pickup_location':
         if (!value.trim()) error = 'Pickup location is required.';
+        else if (!LOCATION_PATTERN.test(value)) error = 'Contains invalid characters.';
         break;
       case 'dropoff_location':
         if (!value.trim()) error = 'Dropoff location is required.';
+        else if (!LOCATION_PATTERN.test(value)) error = 'Contains invalid characters.';
         break;
       case 'current_cycle_used': {
         const num = parseFloat(value);

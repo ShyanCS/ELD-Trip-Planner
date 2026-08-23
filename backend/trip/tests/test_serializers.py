@@ -10,7 +10,7 @@ Covers:
 
 from django.test import TestCase
 
-from trip.serializers import TripPlanSerializer
+from trip.serializers import LOCATION_REGEX, VALIDATION_PATTERNS, TripPlanSerializer
 
 VALID_BASE = {
     'current_location': 'Chicago, IL',
@@ -118,3 +118,19 @@ class TestStartDateField(TestCase):
     def test_invalid_date_format_rejected(self):
         s = TripPlanSerializer(data={**VALID_BASE, 'start_date': 'not-a-date'})
         self.assertFalse(s.is_valid())
+
+
+class TestLocationPatternConstants(TestCase):
+    """The module-level validation patterns reject injection payloads."""
+
+    def test_pattern_rejects_script_tags(self):
+        self.assertFalse(LOCATION_REGEX.match('<script>alert(1)</script>'))
+
+    def test_pattern_rejects_control_characters(self):
+        self.assertFalse(LOCATION_REGEX.match('Chicago\x00\x1b'))
+
+    def test_pattern_accepts_normal_addresses(self):
+        self.assertTrue(LOCATION_REGEX.match("123 O'Neil St. #4, Suite 2-B (Rear)"))
+
+    def test_validations_patterns_registry_exposes_location(self):
+        self.assertIs(VALIDATION_PATTERNS['location'], LOCATION_REGEX)
