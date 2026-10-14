@@ -15,7 +15,7 @@ django==5.2.17
     #   djangorestframework
 django-cors-headers==4.9.0
     # via -r requirements.in
-djangorestframework==3.18.0
+djangorestframework==3.18.3
     # via -r requirements.in
 gunicorn==22.0.0
     # via -r requirements.in
